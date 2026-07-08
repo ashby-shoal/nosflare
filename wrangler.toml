@@ -12,20 +12,22 @@ class_name = "RelayWebSocket"
 # Important! Change name and id settings to your own
 [[d1_databases]]
 binding = "RELAY_DATABASE"
-database_name = "nostr-relay"
-database_id = "ba4f97db-cc23-4ea0-b7da-cf8ddc3d84ef"
+database_name = "nosflare"
+database_id = "724c13fa-929a-4c12-97d4-b82952a42a4b"
 
 # Cron trigger for 24hr database maintenance
 [triggers]
 crons = ["0 0 * * *"]
 
 # CPU limits (lower to 10 if not on paid Workers plan)
-[limits]
-cpu_ms = 300000
+#   [limits]
+#   cpu_ms = 300000
+
 
 # Enable logs (off by default, but can enable)
 [observability.logs]
-enabled = false
+enabled = true
+invocation_logs = true
 
 # Durable Object migration with SQLite storage backend
 [[migrations]]

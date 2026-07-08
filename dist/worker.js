@@ -1,12 +1,17 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
 
-// src/types.ts
-var _RateLimiter = class _RateLimiter {
+// worker.js
+var __defProp2 = Object.defineProperty;
+var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
+var __export = /* @__PURE__ */ __name((target, all) => {
+  for (var name in all)
+    __defProp2(target, name, { get: all[name], enumerable: true });
+}, "__export");
+var _RateLimiter = class _RateLimiter2 {
+  static {
+    __name(this, "_RateLimiter");
+  }
   constructor(rate, capacity) {
     this.tokens = capacity;
     this.lastRefillTime = Date.now();
@@ -29,44 +34,42 @@ var _RateLimiter = class _RateLimiter {
     this.lastRefillTime = now;
   }
 };
-__name(_RateLimiter, "RateLimiter");
+__name2(_RateLimiter, "RateLimiter");
 var RateLimiter = _RateLimiter;
-
-// src/config.ts
 var config_exports = {};
 __export(config_exports, {
-  AUTH_REQUIRED: () => AUTH_REQUIRED,
-  AUTH_TIMEOUT_MS: () => AUTH_TIMEOUT_MS,
-  DB_PRUNE_BATCH_SIZE: () => DB_PRUNE_BATCH_SIZE,
-  DB_PRUNE_TARGET_GB: () => DB_PRUNE_TARGET_GB,
-  DB_PRUNING_ENABLED: () => DB_PRUNING_ENABLED,
-  DB_SIZE_THRESHOLD_GB: () => DB_SIZE_THRESHOLD_GB,
-  PAY_TO_RELAY_ENABLED: () => PAY_TO_RELAY_ENABLED,
-  PUBKEY_RATE_LIMIT: () => PUBKEY_RATE_LIMIT,
-  RELAY_ACCESS_PRICE_SATS: () => RELAY_ACCESS_PRICE_SATS,
-  REQ_RATE_LIMIT: () => REQ_RATE_LIMIT,
-  allowedEventKinds: () => allowedEventKinds,
-  allowedNip05Domains: () => allowedNip05Domains,
-  allowedPubkeys: () => allowedPubkeys,
-  allowedTags: () => allowedTags,
-  antiSpamKinds: () => antiSpamKinds,
-  blockedContent: () => blockedContent,
-  blockedEventKinds: () => blockedEventKinds,
-  blockedNip05Domains: () => blockedNip05Domains,
-  blockedPubkeys: () => blockedPubkeys,
-  blockedTags: () => blockedTags,
-  checkValidNip05: () => checkValidNip05,
-  containsBlockedContent: () => containsBlockedContent,
-  enableAntiSpam: () => enableAntiSpam,
-  enableGlobalDuplicateCheck: () => enableGlobalDuplicateCheck,
-  excludedRateLimitKinds: () => excludedRateLimitKinds,
-  isEventKindAllowed: () => isEventKindAllowed,
-  isPubkeyAllowed: () => isPubkeyAllowed,
-  isTagAllowed: () => isTagAllowed,
-  nip05Users: () => nip05Users,
-  pruneProtectedKinds: () => pruneProtectedKinds,
-  relayInfo: () => relayInfo,
-  relayNpub: () => relayNpub
+  AUTH_REQUIRED: /* @__PURE__ */ __name(() => AUTH_REQUIRED, "AUTH_REQUIRED"),
+  AUTH_TIMEOUT_MS: /* @__PURE__ */ __name(() => AUTH_TIMEOUT_MS, "AUTH_TIMEOUT_MS"),
+  DB_PRUNE_BATCH_SIZE: /* @__PURE__ */ __name(() => DB_PRUNE_BATCH_SIZE, "DB_PRUNE_BATCH_SIZE"),
+  DB_PRUNE_TARGET_GB: /* @__PURE__ */ __name(() => DB_PRUNE_TARGET_GB, "DB_PRUNE_TARGET_GB"),
+  DB_PRUNING_ENABLED: /* @__PURE__ */ __name(() => DB_PRUNING_ENABLED, "DB_PRUNING_ENABLED"),
+  DB_SIZE_THRESHOLD_GB: /* @__PURE__ */ __name(() => DB_SIZE_THRESHOLD_GB, "DB_SIZE_THRESHOLD_GB"),
+  PAY_TO_RELAY_ENABLED: /* @__PURE__ */ __name(() => PAY_TO_RELAY_ENABLED, "PAY_TO_RELAY_ENABLED"),
+  PUBKEY_RATE_LIMIT: /* @__PURE__ */ __name(() => PUBKEY_RATE_LIMIT, "PUBKEY_RATE_LIMIT"),
+  RELAY_ACCESS_PRICE_SATS: /* @__PURE__ */ __name(() => RELAY_ACCESS_PRICE_SATS, "RELAY_ACCESS_PRICE_SATS"),
+  REQ_RATE_LIMIT: /* @__PURE__ */ __name(() => REQ_RATE_LIMIT, "REQ_RATE_LIMIT"),
+  allowedEventKinds: /* @__PURE__ */ __name(() => allowedEventKinds, "allowedEventKinds"),
+  allowedNip05Domains: /* @__PURE__ */ __name(() => allowedNip05Domains, "allowedNip05Domains"),
+  allowedPubkeys: /* @__PURE__ */ __name(() => allowedPubkeys, "allowedPubkeys"),
+  allowedTags: /* @__PURE__ */ __name(() => allowedTags, "allowedTags"),
+  antiSpamKinds: /* @__PURE__ */ __name(() => antiSpamKinds, "antiSpamKinds"),
+  blockedContent: /* @__PURE__ */ __name(() => blockedContent, "blockedContent"),
+  blockedEventKinds: /* @__PURE__ */ __name(() => blockedEventKinds, "blockedEventKinds"),
+  blockedNip05Domains: /* @__PURE__ */ __name(() => blockedNip05Domains, "blockedNip05Domains"),
+  blockedPubkeys: /* @__PURE__ */ __name(() => blockedPubkeys, "blockedPubkeys"),
+  blockedTags: /* @__PURE__ */ __name(() => blockedTags, "blockedTags"),
+  checkValidNip05: /* @__PURE__ */ __name(() => checkValidNip05, "checkValidNip05"),
+  containsBlockedContent: /* @__PURE__ */ __name(() => containsBlockedContent, "containsBlockedContent"),
+  enableAntiSpam: /* @__PURE__ */ __name(() => enableAntiSpam, "enableAntiSpam"),
+  enableGlobalDuplicateCheck: /* @__PURE__ */ __name(() => enableGlobalDuplicateCheck, "enableGlobalDuplicateCheck"),
+  excludedRateLimitKinds: /* @__PURE__ */ __name(() => excludedRateLimitKinds, "excludedRateLimitKinds"),
+  isEventKindAllowed: /* @__PURE__ */ __name(() => isEventKindAllowed, "isEventKindAllowed"),
+  isPubkeyAllowed: /* @__PURE__ */ __name(() => isPubkeyAllowed, "isPubkeyAllowed"),
+  isTagAllowed: /* @__PURE__ */ __name(() => isTagAllowed, "isTagAllowed"),
+  nip05Users: /* @__PURE__ */ __name(() => nip05Users, "nip05Users"),
+  pruneProtectedKinds: /* @__PURE__ */ __name(() => pruneProtectedKinds, "pruneProtectedKinds"),
+  relayInfo: /* @__PURE__ */ __name(() => relayInfo, "relayInfo"),
+  relayNpub: /* @__PURE__ */ __name(() => relayNpub, "relayNpub")
 });
 var relayNpub = "npub16jdfqgazrkapk0yrqm9rdxlnys7ck39c7zmdzxtxqlmmpxg04r0sd733sv";
 var PAY_TO_RELAY_ENABLED = false;
@@ -341,6 +344,7 @@ function isPubkeyAllowed(pubkey) {
   return !blockedPubkeys.has(pubkey);
 }
 __name(isPubkeyAllowed, "isPubkeyAllowed");
+__name2(isPubkeyAllowed, "isPubkeyAllowed");
 function isEventKindAllowed(kind) {
   if (allowedEventKinds.size > 0 && !allowedEventKinds.has(kind)) {
     return false;
@@ -348,6 +352,7 @@ function isEventKindAllowed(kind) {
   return !blockedEventKinds.has(kind);
 }
 __name(isEventKindAllowed, "isEventKindAllowed");
+__name2(isEventKindAllowed, "isEventKindAllowed");
 function containsBlockedContent(event) {
   const lowercaseContent = (event.content || "").toLowerCase();
   const lowercaseTags = event.tags.map((tag) => tag.join("").toLowerCase());
@@ -360,6 +365,7 @@ function containsBlockedContent(event) {
   return false;
 }
 __name(containsBlockedContent, "containsBlockedContent");
+__name2(containsBlockedContent, "containsBlockedContent");
 function isTagAllowed(tag) {
   if (allowedTags.size > 0 && !allowedTags.has(tag)) {
     return false;
@@ -367,20 +373,19 @@ function isTagAllowed(tag) {
   return !blockedTags.has(tag);
 }
 __name(isTagAllowed, "isTagAllowed");
-
-// node_modules/.pnpm/@noble+hashes@1.8.0/node_modules/@noble/hashes/esm/crypto.js
+__name2(isTagAllowed, "isTagAllowed");
 var crypto2 = typeof globalThis === "object" && "crypto" in globalThis ? globalThis.crypto : void 0;
-
-// node_modules/.pnpm/@noble+hashes@1.8.0/node_modules/@noble/hashes/esm/utils.js
 function isBytes(a) {
   return a instanceof Uint8Array || ArrayBuffer.isView(a) && a.constructor.name === "Uint8Array";
 }
 __name(isBytes, "isBytes");
+__name2(isBytes, "isBytes");
 function anumber(n) {
   if (!Number.isSafeInteger(n) || n < 0)
     throw new Error("positive integer expected, got " + n);
 }
 __name(anumber, "anumber");
+__name2(anumber, "anumber");
 function abytes(b, ...lengths) {
   if (!isBytes(b))
     throw new Error("Uint8Array expected");
@@ -388,6 +393,7 @@ function abytes(b, ...lengths) {
     throw new Error("Uint8Array expected of length " + lengths + ", got length=" + b.length);
 }
 __name(abytes, "abytes");
+__name2(abytes, "abytes");
 function ahash(h) {
   if (typeof h !== "function" || typeof h.create !== "function")
     throw new Error("Hash should be wrapped by utils.createHasher");
@@ -395,6 +401,7 @@ function ahash(h) {
   anumber(h.blockLen);
 }
 __name(ahash, "ahash");
+__name2(ahash, "ahash");
 function aexists(instance, checkFinished = true) {
   if (instance.destroyed)
     throw new Error("Hash instance has been destroyed");
@@ -402,6 +409,7 @@ function aexists(instance, checkFinished = true) {
     throw new Error("Hash#digest() has already been called");
 }
 __name(aexists, "aexists");
+__name2(aexists, "aexists");
 function aoutput(out, instance) {
   abytes(out);
   const min = instance.outputLen;
@@ -410,20 +418,24 @@ function aoutput(out, instance) {
   }
 }
 __name(aoutput, "aoutput");
+__name2(aoutput, "aoutput");
 function clean(...arrays) {
   for (let i = 0; i < arrays.length; i++) {
     arrays[i].fill(0);
   }
 }
 __name(clean, "clean");
+__name2(clean, "clean");
 function createView(arr) {
   return new DataView(arr.buffer, arr.byteOffset, arr.byteLength);
 }
 __name(createView, "createView");
+__name2(createView, "createView");
 function rotr(word, shift) {
   return word << 32 - shift | word >>> shift;
 }
 __name(rotr, "rotr");
+__name2(rotr, "rotr");
 var hasHexBuiltin = /* @__PURE__ */ (() => (
   // @ts-ignore
   typeof Uint8Array.from([]).toHex === "function" && typeof Uint8Array.fromHex === "function"
@@ -440,6 +452,7 @@ function bytesToHex(bytes) {
   return hex;
 }
 __name(bytesToHex, "bytesToHex");
+__name2(bytesToHex, "bytesToHex");
 var asciis = { _0: 48, _9: 57, A: 65, F: 70, a: 97, f: 102 };
 function asciiToBase16(ch) {
   if (ch >= asciis._0 && ch <= asciis._9)
@@ -451,6 +464,7 @@ function asciiToBase16(ch) {
   return;
 }
 __name(asciiToBase16, "asciiToBase16");
+__name2(asciiToBase16, "asciiToBase16");
 function hexToBytes(hex) {
   if (typeof hex !== "string")
     throw new Error("hex string expected, got " + typeof hex);
@@ -473,12 +487,14 @@ function hexToBytes(hex) {
   return array;
 }
 __name(hexToBytes, "hexToBytes");
+__name2(hexToBytes, "hexToBytes");
 function utf8ToBytes(str) {
   if (typeof str !== "string")
     throw new Error("string expected");
   return new Uint8Array(new TextEncoder().encode(str));
 }
 __name(utf8ToBytes, "utf8ToBytes");
+__name2(utf8ToBytes, "utf8ToBytes");
 function toBytes(data) {
   if (typeof data === "string")
     data = utf8ToBytes(data);
@@ -486,6 +502,7 @@ function toBytes(data) {
   return data;
 }
 __name(toBytes, "toBytes");
+__name2(toBytes, "toBytes");
 function concatBytes(...arrays) {
   let sum = 0;
   for (let i = 0; i < arrays.length; i++) {
@@ -502,12 +519,16 @@ function concatBytes(...arrays) {
   return res;
 }
 __name(concatBytes, "concatBytes");
-var _Hash = class _Hash {
+__name2(concatBytes, "concatBytes");
+var _Hash = class _Hash2 {
+  static {
+    __name(this, "_Hash");
+  }
 };
-__name(_Hash, "Hash");
+__name2(_Hash, "Hash");
 var Hash = _Hash;
 function createHasher(hashCons) {
-  const hashC = /* @__PURE__ */ __name((msg) => hashCons().update(toBytes(msg)).digest(), "hashC");
+  const hashC = /* @__PURE__ */ __name2((msg) => hashCons().update(toBytes(msg)).digest(), "hashC");
   const tmp = hashCons();
   hashC.outputLen = tmp.outputLen;
   hashC.blockLen = tmp.blockLen;
@@ -515,6 +536,7 @@ function createHasher(hashCons) {
   return hashC;
 }
 __name(createHasher, "createHasher");
+__name2(createHasher, "createHasher");
 function randomBytes(bytesLength = 32) {
   if (crypto2 && typeof crypto2.getRandomValues === "function") {
     return crypto2.getRandomValues(new Uint8Array(bytesLength));
@@ -525,8 +547,7 @@ function randomBytes(bytesLength = 32) {
   throw new Error("crypto.getRandomValues must be defined");
 }
 __name(randomBytes, "randomBytes");
-
-// node_modules/.pnpm/@noble+hashes@1.8.0/node_modules/@noble/hashes/esm/_md.js
+__name2(randomBytes, "randomBytes");
 function setBigUint64(view, byteOffset, value, isLE) {
   if (typeof view.setBigUint64 === "function")
     return view.setBigUint64(byteOffset, value, isLE);
@@ -540,15 +561,21 @@ function setBigUint64(view, byteOffset, value, isLE) {
   view.setUint32(byteOffset + l, wl, isLE);
 }
 __name(setBigUint64, "setBigUint64");
+__name2(setBigUint64, "setBigUint64");
 function Chi(a, b, c) {
   return a & b ^ ~a & c;
 }
 __name(Chi, "Chi");
+__name2(Chi, "Chi");
 function Maj(a, b, c) {
   return a & b ^ a & c ^ b & c;
 }
 __name(Maj, "Maj");
-var _HashMD = class _HashMD extends Hash {
+__name2(Maj, "Maj");
+var _HashMD = class _HashMD2 extends Hash {
+  static {
+    __name(this, "_HashMD");
+  }
   constructor(blockLen, outputLen, padOffset, isLE) {
     super();
     this.finished = false;
@@ -638,7 +665,7 @@ var _HashMD = class _HashMD extends Hash {
     return this._cloneInto();
   }
 };
-__name(_HashMD, "HashMD");
+__name2(_HashMD, "HashMD");
 var HashMD = _HashMD;
 var SHA256_IV = /* @__PURE__ */ Uint32Array.from([
   1779033703,
@@ -650,8 +677,6 @@ var SHA256_IV = /* @__PURE__ */ Uint32Array.from([
   528734635,
   1541459225
 ]);
-
-// node_modules/.pnpm/@noble+hashes@1.8.0/node_modules/@noble/hashes/esm/sha2.js
 var SHA256_K = /* @__PURE__ */ Uint32Array.from([
   1116352408,
   1899447441,
@@ -719,7 +744,10 @@ var SHA256_K = /* @__PURE__ */ Uint32Array.from([
   3329325298
 ]);
 var SHA256_W = /* @__PURE__ */ new Uint32Array(64);
-var _SHA256 = class _SHA256 extends HashMD {
+var _SHA256 = class _SHA2562 extends HashMD {
+  static {
+    __name(this, "_SHA256");
+  }
   constructor(outputLen = 32) {
     super(64, outputLen, 8, false);
     this.A = SHA256_IV[0] | 0;
@@ -789,12 +817,13 @@ var _SHA256 = class _SHA256 extends HashMD {
     clean(this.buffer);
   }
 };
-__name(_SHA256, "SHA256");
+__name2(_SHA256, "SHA256");
 var SHA256 = _SHA256;
 var sha256 = /* @__PURE__ */ createHasher(() => new SHA256());
-
-// node_modules/.pnpm/@noble+hashes@1.8.0/node_modules/@noble/hashes/esm/hmac.js
-var _HMAC = class _HMAC extends Hash {
+var _HMAC = class _HMAC2 extends Hash {
+  static {
+    __name(this, "_HMAC");
+  }
   constructor(hash, _key) {
     super();
     this.finished = false;
@@ -858,12 +887,10 @@ var _HMAC = class _HMAC extends Hash {
     this.iHash.destroy();
   }
 };
-__name(_HMAC, "HMAC");
+__name2(_HMAC, "HMAC");
 var HMAC = _HMAC;
-var hmac = /* @__PURE__ */ __name((hash, key, message) => new HMAC(hash, key).update(message).digest(), "hmac");
+var hmac = /* @__PURE__ */ __name2((hash, key, message) => new HMAC(hash, key).update(message).digest(), "hmac");
 hmac.create = (hash, key) => new HMAC(hash, key);
-
-// node_modules/.pnpm/@noble+curves@1.9.7/node_modules/@noble/curves/esm/utils.js
 var _0n = /* @__PURE__ */ BigInt(0);
 var _1n = /* @__PURE__ */ BigInt(1);
 function _abool2(value, title = "") {
@@ -874,6 +901,7 @@ function _abool2(value, title = "") {
   return value;
 }
 __name(_abool2, "_abool2");
+__name2(_abool2, "_abool2");
 function _abytes2(value, length, title = "") {
   const bytes = isBytes(value);
   const len = value?.length;
@@ -887,34 +915,41 @@ function _abytes2(value, length, title = "") {
   return value;
 }
 __name(_abytes2, "_abytes2");
+__name2(_abytes2, "_abytes2");
 function numberToHexUnpadded(num2) {
   const hex = num2.toString(16);
   return hex.length & 1 ? "0" + hex : hex;
 }
 __name(numberToHexUnpadded, "numberToHexUnpadded");
+__name2(numberToHexUnpadded, "numberToHexUnpadded");
 function hexToNumber(hex) {
   if (typeof hex !== "string")
     throw new Error("hex string expected, got " + typeof hex);
   return hex === "" ? _0n : BigInt("0x" + hex);
 }
 __name(hexToNumber, "hexToNumber");
+__name2(hexToNumber, "hexToNumber");
 function bytesToNumberBE(bytes) {
   return hexToNumber(bytesToHex(bytes));
 }
 __name(bytesToNumberBE, "bytesToNumberBE");
+__name2(bytesToNumberBE, "bytesToNumberBE");
 function bytesToNumberLE(bytes) {
   abytes(bytes);
   return hexToNumber(bytesToHex(Uint8Array.from(bytes).reverse()));
 }
 __name(bytesToNumberLE, "bytesToNumberLE");
+__name2(bytesToNumberLE, "bytesToNumberLE");
 function numberToBytesBE(n, len) {
   return hexToBytes(n.toString(16).padStart(len * 2, "0"));
 }
 __name(numberToBytesBE, "numberToBytesBE");
+__name2(numberToBytesBE, "numberToBytesBE");
 function numberToBytesLE(n, len) {
   return numberToBytesBE(n, len).reverse();
 }
 __name(numberToBytesLE, "numberToBytesLE");
+__name2(numberToBytesLE, "numberToBytesLE");
 function ensureBytes(title, hex, expectedLength) {
   let res;
   if (typeof hex === "string") {
@@ -934,16 +969,19 @@ function ensureBytes(title, hex, expectedLength) {
   return res;
 }
 __name(ensureBytes, "ensureBytes");
-var isPosBig = /* @__PURE__ */ __name((n) => typeof n === "bigint" && _0n <= n, "isPosBig");
+__name2(ensureBytes, "ensureBytes");
+var isPosBig = /* @__PURE__ */ __name2((n) => typeof n === "bigint" && _0n <= n, "isPosBig");
 function inRange(n, min, max) {
   return isPosBig(n) && isPosBig(min) && isPosBig(max) && min <= n && n < max;
 }
 __name(inRange, "inRange");
+__name2(inRange, "inRange");
 function aInRange(title, n, min, max) {
   if (!inRange(n, min, max))
     throw new Error("expected valid " + title + ": " + min + " <= n < " + max + ", got " + n);
 }
 __name(aInRange, "aInRange");
+__name2(aInRange, "aInRange");
 function bitLen(n) {
   let len;
   for (len = 0; n > _0n; n >>= _1n, len += 1)
@@ -951,7 +989,8 @@ function bitLen(n) {
   return len;
 }
 __name(bitLen, "bitLen");
-var bitMask = /* @__PURE__ */ __name((n) => (_1n << BigInt(n)) - _1n, "bitMask");
+__name2(bitLen, "bitLen");
+var bitMask = /* @__PURE__ */ __name2((n) => (_1n << BigInt(n)) - _1n, "bitMask");
 function createHmacDrbg(hashLen, qByteLen, hmacFn) {
   if (typeof hashLen !== "number" || hashLen < 2)
     throw new Error("hashLen must be a number");
@@ -959,18 +998,18 @@ function createHmacDrbg(hashLen, qByteLen, hmacFn) {
     throw new Error("qByteLen must be a number");
   if (typeof hmacFn !== "function")
     throw new Error("hmacFn must be a function");
-  const u8n = /* @__PURE__ */ __name((len) => new Uint8Array(len), "u8n");
-  const u8of = /* @__PURE__ */ __name((byte) => Uint8Array.of(byte), "u8of");
+  const u8n = /* @__PURE__ */ __name2((len) => new Uint8Array(len), "u8n");
+  const u8of = /* @__PURE__ */ __name2((byte) => Uint8Array.of(byte), "u8of");
   let v = u8n(hashLen);
   let k = u8n(hashLen);
   let i = 0;
-  const reset = /* @__PURE__ */ __name(() => {
+  const reset = /* @__PURE__ */ __name2(() => {
     v.fill(1);
     k.fill(0);
     i = 0;
   }, "reset");
-  const h = /* @__PURE__ */ __name((...b) => hmacFn(k, v, ...b), "h");
-  const reseed = /* @__PURE__ */ __name((seed = u8n(0)) => {
+  const h = /* @__PURE__ */ __name2((...b) => hmacFn(k, v, ...b), "h");
+  const reseed = /* @__PURE__ */ __name2((seed = u8n(0)) => {
     k = h(u8of(0), seed);
     v = h();
     if (seed.length === 0)
@@ -978,7 +1017,7 @@ function createHmacDrbg(hashLen, qByteLen, hmacFn) {
     k = h(u8of(1), seed);
     v = h();
   }, "reseed");
-  const gen = /* @__PURE__ */ __name(() => {
+  const gen = /* @__PURE__ */ __name2(() => {
     if (i++ >= 1e3)
       throw new Error("drbg: tried 1000 values");
     let len = 0;
@@ -991,7 +1030,7 @@ function createHmacDrbg(hashLen, qByteLen, hmacFn) {
     }
     return concatBytes(...out);
   }, "gen");
-  const genUntil = /* @__PURE__ */ __name((seed, pred) => {
+  const genUntil = /* @__PURE__ */ __name2((seed, pred) => {
     reset();
     reseed(seed);
     let res = void 0;
@@ -1003,6 +1042,7 @@ function createHmacDrbg(hashLen, qByteLen, hmacFn) {
   return genUntil;
 }
 __name(createHmacDrbg, "createHmacDrbg");
+__name2(createHmacDrbg, "createHmacDrbg");
 function _validateObject(object, fields, optFields = {}) {
   if (!object || typeof object !== "object")
     throw new Error("expected valid options object");
@@ -1015,10 +1055,12 @@ function _validateObject(object, fields, optFields = {}) {
       throw new Error(`param "${fieldName}" is invalid: expected ${expectedType}, got ${current}`);
   }
   __name(checkField, "checkField");
+  __name2(checkField, "checkField");
   Object.entries(fields).forEach(([k, v]) => checkField(k, v, false));
   Object.entries(optFields).forEach(([k, v]) => checkField(k, v, true));
 }
 __name(_validateObject, "_validateObject");
+__name2(_validateObject, "_validateObject");
 function memoized(fn) {
   const map = /* @__PURE__ */ new WeakMap();
   return (arg, ...args) => {
@@ -1031,8 +1073,7 @@ function memoized(fn) {
   };
 }
 __name(memoized, "memoized");
-
-// node_modules/.pnpm/@noble+curves@1.9.7/node_modules/@noble/curves/esm/abstract/modular.js
+__name2(memoized, "memoized");
 var _0n2 = BigInt(0);
 var _1n2 = BigInt(1);
 var _2n = /* @__PURE__ */ BigInt(2);
@@ -1048,6 +1089,7 @@ function mod(a, b) {
   return result >= _0n2 ? result : b + result;
 }
 __name(mod, "mod");
+__name2(mod, "mod");
 function pow2(x, power, modulo) {
   let res = x;
   while (power-- > _0n2) {
@@ -1057,6 +1099,7 @@ function pow2(x, power, modulo) {
   return res;
 }
 __name(pow2, "pow2");
+__name2(pow2, "pow2");
 function invert(number, modulo) {
   if (number === _0n2)
     throw new Error("invert: expected non-zero number");
@@ -1078,11 +1121,13 @@ function invert(number, modulo) {
   return mod(x, modulo);
 }
 __name(invert, "invert");
+__name2(invert, "invert");
 function assertIsSquare(Fp, root, n) {
   if (!Fp.eql(Fp.sqr(root), n))
     throw new Error("Cannot find square root");
 }
 __name(assertIsSquare, "assertIsSquare");
+__name2(assertIsSquare, "assertIsSquare");
 function sqrt3mod4(Fp, n) {
   const p1div4 = (Fp.ORDER + _1n2) / _4n;
   const root = Fp.pow(n, p1div4);
@@ -1090,6 +1135,7 @@ function sqrt3mod4(Fp, n) {
   return root;
 }
 __name(sqrt3mod4, "sqrt3mod4");
+__name2(sqrt3mod4, "sqrt3mod4");
 function sqrt5mod8(Fp, n) {
   const p5div8 = (Fp.ORDER - _5n) / _8n;
   const n2 = Fp.mul(n, _2n);
@@ -1101,6 +1147,7 @@ function sqrt5mod8(Fp, n) {
   return root;
 }
 __name(sqrt5mod8, "sqrt5mod8");
+__name2(sqrt5mod8, "sqrt5mod8");
 function sqrt9mod16(P) {
   const Fp_ = Field(P);
   const tn = tonelliShanks(P);
@@ -1124,6 +1171,7 @@ function sqrt9mod16(P) {
   };
 }
 __name(sqrt9mod16, "sqrt9mod16");
+__name2(sqrt9mod16, "sqrt9mod16");
 function tonelliShanks(P) {
   if (P < _3n)
     throw new Error("sqrt is not defined for small field");
@@ -1143,7 +1191,7 @@ function tonelliShanks(P) {
     return sqrt3mod4;
   let cc = _Fp.pow(Z, Q);
   const Q1div2 = (Q + _1n2) / _2n;
-  return /* @__PURE__ */ __name(function tonelliSlow(Fp, n) {
+  return /* @__PURE__ */ __name2(/* @__PURE__ */ __name(function tonelliSlow(Fp, n) {
     if (Fp.is0(n))
       return n;
     if (FpLegendre(Fp, n) !== 1)
@@ -1171,9 +1219,10 @@ function tonelliShanks(P) {
       R = Fp.mul(R, b);
     }
     return R;
-  }, "tonelliSlow");
+  }, "tonelliSlow"), "tonelliSlow");
 }
 __name(tonelliShanks, "tonelliShanks");
+__name2(tonelliShanks, "tonelliShanks");
 function FpSqrt(P) {
   if (P % _4n === _3n)
     return sqrt3mod4;
@@ -1184,6 +1233,7 @@ function FpSqrt(P) {
   return tonelliShanks(P);
 }
 __name(FpSqrt, "FpSqrt");
+__name2(FpSqrt, "FpSqrt");
 var FIELD_FIELDS = [
   "create",
   "isValid",
@@ -1218,6 +1268,7 @@ function validateField(field) {
   return field;
 }
 __name(validateField, "validateField");
+__name2(validateField, "validateField");
 function FpPow(Fp, num2, power) {
   if (power < _0n2)
     throw new Error("invalid exponent, negatives unsupported");
@@ -1236,6 +1287,7 @@ function FpPow(Fp, num2, power) {
   return p;
 }
 __name(FpPow, "FpPow");
+__name2(FpPow, "FpPow");
 function FpInvertBatch(Fp, nums, passZero = false) {
   const inverted = new Array(nums.length).fill(passZero ? Fp.ZERO : void 0);
   const multipliedAcc = nums.reduce((acc, num2, i) => {
@@ -1254,6 +1306,7 @@ function FpInvertBatch(Fp, nums, passZero = false) {
   return inverted;
 }
 __name(FpInvertBatch, "FpInvertBatch");
+__name2(FpInvertBatch, "FpInvertBatch");
 function FpLegendre(Fp, n) {
   const p1mod2 = (Fp.ORDER - _1n2) / _2n;
   const powered = Fp.pow(n, p1mod2);
@@ -1265,6 +1318,7 @@ function FpLegendre(Fp, n) {
   return yes ? 1 : zero ? 0 : -1;
 }
 __name(FpLegendre, "FpLegendre");
+__name2(FpLegendre, "FpLegendre");
 function nLength(n, nBitLength) {
   if (nBitLength !== void 0)
     anumber(nBitLength);
@@ -1273,6 +1327,7 @@ function nLength(n, nBitLength) {
   return { nBitLength: _nBitLength, nByteLength };
 }
 __name(nLength, "nLength");
+__name2(nLength, "nLength");
 function Field(ORDER, bitLenOrOpts, isLE = false, opts = {}) {
   if (ORDER <= _0n2)
     throw new Error("invalid field: expected ORDER > 0, got " + ORDER);
@@ -1312,37 +1367,37 @@ function Field(ORDER, bitLenOrOpts, isLE = false, opts = {}) {
     ZERO: _0n2,
     ONE: _1n2,
     allowedLengths,
-    create: (num2) => mod(num2, ORDER),
-    isValid: (num2) => {
+    create: /* @__PURE__ */ __name((num2) => mod(num2, ORDER), "create"),
+    isValid: /* @__PURE__ */ __name((num2) => {
       if (typeof num2 !== "bigint")
         throw new Error("invalid field element: expected bigint, got " + typeof num2);
       return _0n2 <= num2 && num2 < ORDER;
-    },
-    is0: (num2) => num2 === _0n2,
+    }, "isValid"),
+    is0: /* @__PURE__ */ __name((num2) => num2 === _0n2, "is0"),
     // is valid and invertible
-    isValidNot0: (num2) => !f.is0(num2) && f.isValid(num2),
-    isOdd: (num2) => (num2 & _1n2) === _1n2,
-    neg: (num2) => mod(-num2, ORDER),
-    eql: (lhs, rhs) => lhs === rhs,
-    sqr: (num2) => mod(num2 * num2, ORDER),
-    add: (lhs, rhs) => mod(lhs + rhs, ORDER),
-    sub: (lhs, rhs) => mod(lhs - rhs, ORDER),
-    mul: (lhs, rhs) => mod(lhs * rhs, ORDER),
-    pow: (num2, power) => FpPow(f, num2, power),
-    div: (lhs, rhs) => mod(lhs * invert(rhs, ORDER), ORDER),
+    isValidNot0: /* @__PURE__ */ __name((num2) => !f.is0(num2) && f.isValid(num2), "isValidNot0"),
+    isOdd: /* @__PURE__ */ __name((num2) => (num2 & _1n2) === _1n2, "isOdd"),
+    neg: /* @__PURE__ */ __name((num2) => mod(-num2, ORDER), "neg"),
+    eql: /* @__PURE__ */ __name((lhs, rhs) => lhs === rhs, "eql"),
+    sqr: /* @__PURE__ */ __name((num2) => mod(num2 * num2, ORDER), "sqr"),
+    add: /* @__PURE__ */ __name((lhs, rhs) => mod(lhs + rhs, ORDER), "add"),
+    sub: /* @__PURE__ */ __name((lhs, rhs) => mod(lhs - rhs, ORDER), "sub"),
+    mul: /* @__PURE__ */ __name((lhs, rhs) => mod(lhs * rhs, ORDER), "mul"),
+    pow: /* @__PURE__ */ __name((num2, power) => FpPow(f, num2, power), "pow"),
+    div: /* @__PURE__ */ __name((lhs, rhs) => mod(lhs * invert(rhs, ORDER), ORDER), "div"),
     // Same as above, but doesn't normalize
-    sqrN: (num2) => num2 * num2,
-    addN: (lhs, rhs) => lhs + rhs,
-    subN: (lhs, rhs) => lhs - rhs,
-    mulN: (lhs, rhs) => lhs * rhs,
-    inv: (num2) => invert(num2, ORDER),
+    sqrN: /* @__PURE__ */ __name((num2) => num2 * num2, "sqrN"),
+    addN: /* @__PURE__ */ __name((lhs, rhs) => lhs + rhs, "addN"),
+    subN: /* @__PURE__ */ __name((lhs, rhs) => lhs - rhs, "subN"),
+    mulN: /* @__PURE__ */ __name((lhs, rhs) => lhs * rhs, "mulN"),
+    inv: /* @__PURE__ */ __name((num2) => invert(num2, ORDER), "inv"),
     sqrt: _sqrt || ((n) => {
       if (!sqrtP)
         sqrtP = FpSqrt(ORDER);
       return sqrtP(f, n);
     }),
-    toBytes: (num2) => isLE ? numberToBytesLE(num2, BYTES) : numberToBytesBE(num2, BYTES),
-    fromBytes: (bytes, skipValidation = true) => {
+    toBytes: /* @__PURE__ */ __name((num2) => isLE ? numberToBytesLE(num2, BYTES) : numberToBytesBE(num2, BYTES), "toBytes"),
+    fromBytes: /* @__PURE__ */ __name((bytes, skipValidation = true) => {
       if (allowedLengths) {
         if (!allowedLengths.includes(bytes.length) || bytes.length > BYTES) {
           throw new Error("Field.fromBytes: expected " + allowedLengths + " bytes, got " + bytes.length);
@@ -1361,16 +1416,17 @@ function Field(ORDER, bitLenOrOpts, isLE = false, opts = {}) {
           throw new Error("invalid field element: outside of range 0..ORDER");
       }
       return scalar;
-    },
+    }, "fromBytes"),
     // TODO: we don't need it here, move out to separate fn
-    invertBatch: (lst) => FpInvertBatch(f, lst),
+    invertBatch: /* @__PURE__ */ __name((lst) => FpInvertBatch(f, lst), "invertBatch"),
     // We can't move this out because Fp6, Fp12 implement it
     // and it's unclear what to return in there.
-    cmov: (a, b, c) => c ? b : a
+    cmov: /* @__PURE__ */ __name((a, b, c) => c ? b : a, "cmov")
   });
   return Object.freeze(f);
 }
 __name(Field, "Field");
+__name2(Field, "Field");
 function getFieldBytesLength(fieldOrder) {
   if (typeof fieldOrder !== "bigint")
     throw new Error("field order must be bigint");
@@ -1378,11 +1434,13 @@ function getFieldBytesLength(fieldOrder) {
   return Math.ceil(bitLength / 8);
 }
 __name(getFieldBytesLength, "getFieldBytesLength");
+__name2(getFieldBytesLength, "getFieldBytesLength");
 function getMinHashLength(fieldOrder) {
   const length = getFieldBytesLength(fieldOrder);
   return length + Math.ceil(length / 2);
 }
 __name(getMinHashLength, "getMinHashLength");
+__name2(getMinHashLength, "getMinHashLength");
 function mapHashToField(key, fieldOrder, isLE = false) {
   const len = key.length;
   const fieldLen = getFieldBytesLength(fieldOrder);
@@ -1394,8 +1452,7 @@ function mapHashToField(key, fieldOrder, isLE = false) {
   return isLE ? numberToBytesLE(reduced, fieldLen) : numberToBytesBE(reduced, fieldLen);
 }
 __name(mapHashToField, "mapHashToField");
-
-// node_modules/.pnpm/@noble+curves@1.9.7/node_modules/@noble/curves/esm/abstract/curve.js
+__name2(mapHashToField, "mapHashToField");
 var _0n3 = BigInt(0);
 var _1n3 = BigInt(1);
 function negateCt(condition, item) {
@@ -1403,16 +1460,19 @@ function negateCt(condition, item) {
   return condition ? neg : item;
 }
 __name(negateCt, "negateCt");
+__name2(negateCt, "negateCt");
 function normalizeZ(c, points) {
   const invertedZs = FpInvertBatch(c.Fp, points.map((p) => p.Z));
   return points.map((p, i) => c.fromAffine(p.toAffine(invertedZs[i])));
 }
 __name(normalizeZ, "normalizeZ");
+__name2(normalizeZ, "normalizeZ");
 function validateW(W, bits) {
   if (!Number.isSafeInteger(W) || W <= 0 || W > bits)
     throw new Error("invalid window size, expected [1.." + bits + "], got W=" + W);
 }
 __name(validateW, "validateW");
+__name2(validateW, "validateW");
 function calcWOpts(W, scalarBits) {
   validateW(W, scalarBits);
   const windows = Math.ceil(scalarBits / W) + 1;
@@ -1423,6 +1483,7 @@ function calcWOpts(W, scalarBits) {
   return { windows, windowSize, mask, maxNumber, shiftBy };
 }
 __name(calcWOpts, "calcWOpts");
+__name2(calcWOpts, "calcWOpts");
 function calcOffsets(n, window, wOpts) {
   const { windowSize, mask, maxNumber, shiftBy } = wOpts;
   let wbits = Number(n & mask);
@@ -1440,6 +1501,7 @@ function calcOffsets(n, window, wOpts) {
   return { nextN, offset, isZero, isNeg, isNegF, offsetF };
 }
 __name(calcOffsets, "calcOffsets");
+__name2(calcOffsets, "calcOffsets");
 function validateMSMPoints(points, c) {
   if (!Array.isArray(points))
     throw new Error("array expected");
@@ -1449,6 +1511,7 @@ function validateMSMPoints(points, c) {
   });
 }
 __name(validateMSMPoints, "validateMSMPoints");
+__name2(validateMSMPoints, "validateMSMPoints");
 function validateMSMScalars(scalars, field) {
   if (!Array.isArray(scalars))
     throw new Error("array of scalars expected");
@@ -1458,18 +1521,24 @@ function validateMSMScalars(scalars, field) {
   });
 }
 __name(validateMSMScalars, "validateMSMScalars");
+__name2(validateMSMScalars, "validateMSMScalars");
 var pointPrecomputes = /* @__PURE__ */ new WeakMap();
 var pointWindowSizes = /* @__PURE__ */ new WeakMap();
 function getW(P) {
   return pointWindowSizes.get(P) || 1;
 }
 __name(getW, "getW");
+__name2(getW, "getW");
 function assert0(n) {
   if (n !== _0n3)
     throw new Error("invalid wNAF");
 }
 __name(assert0, "assert0");
-var _wNAF = class _wNAF {
+__name2(assert0, "assert0");
+var _wNAF = class _wNAF2 {
+  static {
+    __name(this, "_wNAF");
+  }
   // Parametrized with a given Point class (not individual point)
   constructor(Point, bits) {
     this.BASE = Point.BASE;
@@ -1596,7 +1665,7 @@ var _wNAF = class _wNAF {
     return getW(elm) !== 1;
   }
 };
-__name(_wNAF, "wNAF");
+__name2(_wNAF, "wNAF");
 var wNAF = _wNAF;
 function mulEndoUnsafe(Point, point, k1, k2) {
   let acc = point;
@@ -1614,6 +1683,7 @@ function mulEndoUnsafe(Point, point, k1, k2) {
   return { p1, p2 };
 }
 __name(mulEndoUnsafe, "mulEndoUnsafe");
+__name2(mulEndoUnsafe, "mulEndoUnsafe");
 function pippenger(c, fieldN, points, scalars) {
   validateMSMPoints(points, c);
   validateMSMScalars(scalars, fieldN);
@@ -1654,6 +1724,7 @@ function pippenger(c, fieldN, points, scalars) {
   return sum;
 }
 __name(pippenger, "pippenger");
+__name2(pippenger, "pippenger");
 function createField(order, field, isLE) {
   if (field) {
     if (field.ORDER !== order)
@@ -1665,6 +1736,7 @@ function createField(order, field, isLE) {
   }
 }
 __name(createField, "createField");
+__name2(createField, "createField");
 function _createCurveFields(type, CURVE, curveOpts = {}, FpFnLE) {
   if (FpFnLE === void 0)
     FpFnLE = type === "edwards";
@@ -1687,9 +1759,8 @@ function _createCurveFields(type, CURVE, curveOpts = {}, FpFnLE) {
   return { CURVE, Fp, Fn };
 }
 __name(_createCurveFields, "_createCurveFields");
-
-// node_modules/.pnpm/@noble+curves@1.9.7/node_modules/@noble/curves/esm/abstract/weierstrass.js
-var divNearest = /* @__PURE__ */ __name((num2, den) => (num2 + (num2 >= 0 ? den : -den) / _2n2) / den, "divNearest");
+__name2(_createCurveFields, "_createCurveFields");
+var divNearest = /* @__PURE__ */ __name2((num2, den) => (num2 + (num2 >= 0 ? den : -den) / _2n2) / den, "divNearest");
 function _splitEndoScalar(k, basis, n) {
   const [[a1, b1], [a2, b2]] = basis;
   const c1 = divNearest(b2 * k, n);
@@ -1709,12 +1780,14 @@ function _splitEndoScalar(k, basis, n) {
   return { k1neg, k1, k2neg, k2 };
 }
 __name(_splitEndoScalar, "_splitEndoScalar");
+__name2(_splitEndoScalar, "_splitEndoScalar");
 function validateSigFormat(format) {
   if (!["compact", "recovered", "der"].includes(format))
     throw new Error('Signature format must be "compact", "recovered", or "der"');
   return format;
 }
 __name(validateSigFormat, "validateSigFormat");
+__name2(validateSigFormat, "validateSigFormat");
 function validateSigOpts(opts, def) {
   const optsn = {};
   for (let optName of Object.keys(def)) {
@@ -1727,19 +1800,23 @@ function validateSigOpts(opts, def) {
   return optsn;
 }
 __name(validateSigOpts, "validateSigOpts");
-var _DERErr = class _DERErr extends Error {
+__name2(validateSigOpts, "validateSigOpts");
+var _DERErr = class _DERErr2 extends Error {
+  static {
+    __name(this, "_DERErr");
+  }
   constructor(m = "") {
     super(m);
   }
 };
-__name(_DERErr, "DERErr");
+__name2(_DERErr, "DERErr");
 var DERErr = _DERErr;
 var DER = {
   // asn.1 DER encoding utils
   Err: DERErr,
   // Basic building block is TLV (Tag-Length-Value)
   _tlv: {
-    encode: (tag, data) => {
+    encode: /* @__PURE__ */ __name((tag, data) => {
       const { Err: E } = DER;
       if (tag < 0 || tag > 256)
         throw new E("tlv.encode: wrong tag");
@@ -1752,7 +1829,7 @@ var DER = {
       const lenLen = dataLen > 127 ? numberToHexUnpadded(len.length / 2 | 128) : "";
       const t = numberToHexUnpadded(tag);
       return t + lenLen + len + data;
-    },
+    }, "encode"),
     // v - value, l - left bytes (unparsed)
     decode(tag, data) {
       const { Err: E } = DER;
@@ -1857,6 +1934,7 @@ function _normFnElement(Fn, key) {
   return num2;
 }
 __name(_normFnElement, "_normFnElement");
+__name2(_normFnElement, "_normFnElement");
 function weierstrassN(params, extraOpts = {}) {
   const validated = _createCurveFields("weierstrass", params, extraOpts);
   const { Fp, Fn } = validated;
@@ -1883,6 +1961,7 @@ function weierstrassN(params, extraOpts = {}) {
       throw new Error("compression is not supported: Field does not have .isOdd()");
   }
   __name(assertCompressionIsSupported, "assertCompressionIsSupported");
+  __name2(assertCompressionIsSupported, "assertCompressionIsSupported");
   function pointToBytes2(_c, point, isCompressed) {
     const { x, y } = point.toAffine();
     const bx = Fp.toBytes(x);
@@ -1895,7 +1974,8 @@ function weierstrassN(params, extraOpts = {}) {
       return concatBytes(Uint8Array.of(4), bx, Fp.toBytes(y));
     }
   }
-  __name(pointToBytes2, "pointToBytes");
+  __name(pointToBytes2, "pointToBytes2");
+  __name2(pointToBytes2, "pointToBytes");
   function pointFromBytes(bytes) {
     _abytes2(bytes, void 0, "Point");
     const { publicKey: comp, publicKeyUncompressed: uncomp } = lengths;
@@ -1932,6 +2012,7 @@ function weierstrassN(params, extraOpts = {}) {
     }
   }
   __name(pointFromBytes, "pointFromBytes");
+  __name2(pointFromBytes, "pointFromBytes");
   const encodePoint = extraOpts.toBytes || pointToBytes2;
   const decodePoint = extraOpts.fromBytes || pointFromBytes;
   function weierstrassEquation(x) {
@@ -1940,12 +2021,14 @@ function weierstrassN(params, extraOpts = {}) {
     return Fp.add(Fp.add(x3, Fp.mul(x, CURVE.a)), CURVE.b);
   }
   __name(weierstrassEquation, "weierstrassEquation");
+  __name2(weierstrassEquation, "weierstrassEquation");
   function isValidXY(x, y) {
     const left = Fp.sqr(y);
     const right = weierstrassEquation(x);
     return Fp.eql(left, right);
   }
   __name(isValidXY, "isValidXY");
+  __name2(isValidXY, "isValidXY");
   if (!isValidXY(CURVE.Gx, CURVE.Gy))
     throw new Error("bad curve params: generator point");
   const _4a3 = Fp.mul(Fp.pow(CURVE.a, _3n2), _4n2);
@@ -1958,17 +2041,20 @@ function weierstrassN(params, extraOpts = {}) {
     return n;
   }
   __name(acoord, "acoord");
+  __name2(acoord, "acoord");
   function aprjpoint(other) {
     if (!(other instanceof Point))
       throw new Error("ProjectivePoint expected");
   }
   __name(aprjpoint, "aprjpoint");
+  __name2(aprjpoint, "aprjpoint");
   function splitEndoScalarN(k) {
     if (!endo || !endo.basises)
       throw new Error("no endo");
     return _splitEndoScalar(k, endo.basises, Fn.ORDER);
   }
   __name(splitEndoScalarN, "splitEndoScalarN");
+  __name2(splitEndoScalarN, "splitEndoScalarN");
   const toAffineMemo = memoized((p, iz) => {
     const { X, Y, Z } = p;
     if (Fp.eql(Z, Fp.ONE))
@@ -2007,7 +2093,11 @@ function weierstrassN(params, extraOpts = {}) {
     return k1p.add(k2p);
   }
   __name(finishEndo, "finishEndo");
-  const _Point = class _Point {
+  __name2(finishEndo, "finishEndo");
+  const _Point = class _Point2 {
+    static {
+      __name(this, "_Point");
+    }
     /** Does NOT validate if the point is valid. Use `.assertValidity()`. */
     constructor(X, Y, Z) {
       this.X = acoord("x", X);
@@ -2023,19 +2113,19 @@ function weierstrassN(params, extraOpts = {}) {
       const { x, y } = p || {};
       if (!p || !Fp.isValid(x) || !Fp.isValid(y))
         throw new Error("invalid affine point");
-      if (p instanceof _Point)
+      if (p instanceof _Point2)
         throw new Error("projective point not allowed");
       if (Fp.is0(x) && Fp.is0(y))
-        return _Point.ZERO;
-      return new _Point(x, y, Fp.ONE);
+        return _Point2.ZERO;
+      return new _Point2(x, y, Fp.ONE);
     }
     static fromBytes(bytes) {
-      const P = _Point.fromAffine(decodePoint(_abytes2(bytes, void 0, "point")));
+      const P = _Point2.fromAffine(decodePoint(_abytes2(bytes, void 0, "point")));
       P.assertValidity();
       return P;
     }
     static fromHex(hex) {
-      return _Point.fromBytes(ensureBytes("pointHex", hex));
+      return _Point2.fromBytes(ensureBytes("pointHex", hex));
     }
     get x() {
       return this.toAffine().x;
@@ -2077,7 +2167,7 @@ function weierstrassN(params, extraOpts = {}) {
     }
     /** Flips point to one corresponding to (x, -y) in Affine coordinates. */
     negate() {
-      return new _Point(this.X, Fp.neg(this.Y), this.Z);
+      return new _Point2(this.X, Fp.neg(this.Y), this.Z);
     }
     // Renes-Costello-Batina exception-free doubling formula.
     // There is 30% faster Jacobian formula, but it is not complete.
@@ -2119,7 +2209,7 @@ function weierstrassN(params, extraOpts = {}) {
       Z3 = Fp.mul(t2, t1);
       Z3 = Fp.add(Z3, Z3);
       Z3 = Fp.add(Z3, Z3);
-      return new _Point(X3, Y3, Z3);
+      return new _Point2(X3, Y3, Z3);
     }
     // Renes-Costello-Batina exception-free addition formula.
     // There is 30% faster Jacobian formula, but it is not complete.
@@ -2172,13 +2262,13 @@ function weierstrassN(params, extraOpts = {}) {
       t0 = Fp.mul(t3, t1);
       Z3 = Fp.mul(t5, Z3);
       Z3 = Fp.add(Z3, t0);
-      return new _Point(X3, Y3, Z3);
+      return new _Point2(X3, Y3, Z3);
     }
     subtract(other) {
       return this.add(other.negate());
     }
     is0() {
-      return this.equals(_Point.ZERO);
+      return this.equals(_Point2.ZERO);
     }
     /**
      * Constant time multiplication.
@@ -2194,7 +2284,7 @@ function weierstrassN(params, extraOpts = {}) {
       if (!Fn.isValidNot0(scalar))
         throw new Error("invalid scalar: out of range");
       let point, fake;
-      const mul = /* @__PURE__ */ __name((n) => wnaf.cached(this, n, (p) => normalizeZ(_Point, p)), "mul");
+      const mul = /* @__PURE__ */ __name2((n) => wnaf.cached(this, n, (p) => normalizeZ(_Point2, p)), "mul");
       if (endo2) {
         const { k1neg, k1, k2neg, k2 } = splitEndoScalarN(scalar);
         const { p: k1p, f: k1f } = mul(k1);
@@ -2206,7 +2296,7 @@ function weierstrassN(params, extraOpts = {}) {
         point = p;
         fake = f;
       }
-      return normalizeZ(_Point, [point, fake])[0];
+      return normalizeZ(_Point2, [point, fake])[0];
     }
     /**
      * Non-constant-time multiplication. Uses double-and-add algorithm.
@@ -2219,14 +2309,14 @@ function weierstrassN(params, extraOpts = {}) {
       if (!Fn.isValid(sc))
         throw new Error("invalid scalar: out of range");
       if (sc === _0n4 || p.is0())
-        return _Point.ZERO;
+        return _Point2.ZERO;
       if (sc === _1n4)
         return p;
       if (wnaf.hasCache(this))
         return this.multiply(sc);
       if (endo2) {
         const { k1neg, k1, k2neg, k2 } = splitEndoScalarN(sc);
-        const { p1, p2 } = mulEndoUnsafe(_Point, p, k1, k2);
+        const { p1, p2 } = mulEndoUnsafe(_Point2, p, k1, k2);
         return finishEndo(endo2.beta, p1, p2, k1neg, k2neg);
       } else {
         return wnaf.unsafe(p, sc);
@@ -2252,7 +2342,7 @@ function weierstrassN(params, extraOpts = {}) {
       if (cofactor === _1n4)
         return true;
       if (isTorsionFree)
-        return isTorsionFree(_Point, this);
+        return isTorsionFree(_Point2, this);
       return wnaf.unsafe(this, CURVE_ORDER).is0();
     }
     clearCofactor() {
@@ -2260,7 +2350,7 @@ function weierstrassN(params, extraOpts = {}) {
       if (cofactor === _1n4)
         return this;
       if (clearCofactor)
-        return clearCofactor(_Point, this);
+        return clearCofactor(_Point2, this);
       return this.multiplyUnsafe(cofactor);
     }
     isSmallOrder() {
@@ -2269,7 +2359,7 @@ function weierstrassN(params, extraOpts = {}) {
     toBytes(isCompressed = true) {
       _abool2(isCompressed, "isCompressed");
       this.assertValidity();
-      return encodePoint(_Point, this, isCompressed);
+      return encodePoint(_Point2, this, isCompressed);
     }
     toHex(isCompressed = true) {
       return bytesToHex(this.toBytes(isCompressed));
@@ -2294,16 +2384,16 @@ function weierstrassN(params, extraOpts = {}) {
       this.precompute(windowSize);
     }
     static normalizeZ(points) {
-      return normalizeZ(_Point, points);
+      return normalizeZ(_Point2, points);
     }
     static msm(points, scalars) {
-      return pippenger(_Point, Fn, points, scalars);
+      return pippenger(_Point2, Fn, points, scalars);
     }
     static fromPrivateKey(privateKey) {
-      return _Point.BASE.multiply(_normFnElement(Fn, privateKey));
+      return _Point2.BASE.multiply(_normFnElement(Fn, privateKey));
     }
   };
-  __name(_Point, "Point");
+  __name2(_Point, "Point");
   let Point = _Point;
   Point.BASE = new Point(CURVE.Gx, CURVE.Gy, Fp.ONE);
   Point.ZERO = new Point(Fp.ZERO, Fp.ONE, Fp.ZERO);
@@ -2315,10 +2405,12 @@ function weierstrassN(params, extraOpts = {}) {
   return Point;
 }
 __name(weierstrassN, "weierstrassN");
+__name2(weierstrassN, "weierstrassN");
 function pprefix(hasEvenY) {
   return Uint8Array.of(hasEvenY ? 2 : 3);
 }
 __name(pprefix, "pprefix");
+__name2(pprefix, "pprefix");
 function getWLengths(Fp, Fn) {
   return {
     secretKey: Fn.BYTES,
@@ -2329,6 +2421,7 @@ function getWLengths(Fp, Fn) {
   };
 }
 __name(getWLengths, "getWLengths");
+__name2(getWLengths, "getWLengths");
 function ecdh(Point, ecdhOpts = {}) {
   const { Fn } = Point;
   const randomBytes_ = ecdhOpts.randomBytes || randomBytes;
@@ -2341,6 +2434,7 @@ function ecdh(Point, ecdhOpts = {}) {
     }
   }
   __name(isValidSecretKey, "isValidSecretKey");
+  __name2(isValidSecretKey, "isValidSecretKey");
   function isValidPublicKey(publicKey, isCompressed) {
     const { publicKey: comp, publicKeyUncompressed } = lengths;
     try {
@@ -2355,19 +2449,23 @@ function ecdh(Point, ecdhOpts = {}) {
     }
   }
   __name(isValidPublicKey, "isValidPublicKey");
+  __name2(isValidPublicKey, "isValidPublicKey");
   function randomSecretKey(seed = randomBytes_(lengths.seed)) {
     return mapHashToField(_abytes2(seed, lengths.seed, "seed"), Fn.ORDER);
   }
   __name(randomSecretKey, "randomSecretKey");
+  __name2(randomSecretKey, "randomSecretKey");
   function getPublicKey(secretKey, isCompressed = true) {
     return Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
   }
   __name(getPublicKey, "getPublicKey");
+  __name2(getPublicKey, "getPublicKey");
   function keygen(seed) {
     const secretKey = randomSecretKey(seed);
     return { secretKey, publicKey: getPublicKey(secretKey) };
   }
   __name(keygen, "keygen");
+  __name2(keygen, "keygen");
   function isProbPub(item) {
     if (typeof item === "bigint")
       return false;
@@ -2380,6 +2478,7 @@ function ecdh(Point, ecdhOpts = {}) {
     return l === publicKey || l === publicKeyUncompressed;
   }
   __name(isProbPub, "isProbPub");
+  __name2(isProbPub, "isProbPub");
   function getSharedSecret(secretKeyA, publicKeyB, isCompressed = true) {
     if (isProbPub(secretKeyA) === true)
       throw new Error("first arg must be private key");
@@ -2390,6 +2489,7 @@ function ecdh(Point, ecdhOpts = {}) {
     return b.multiply(s).toBytes(isCompressed);
   }
   __name(getSharedSecret, "getSharedSecret");
+  __name2(getSharedSecret, "getSharedSecret");
   const utils = {
     isValidSecretKey,
     isValidPublicKey,
@@ -2397,7 +2497,7 @@ function ecdh(Point, ecdhOpts = {}) {
     // TODO: remove
     isValidPrivateKey: isValidSecretKey,
     randomPrivateKey: randomSecretKey,
-    normPrivateKeyToScalar: (key) => _normFnElement(Fn, key),
+    normPrivateKeyToScalar: /* @__PURE__ */ __name((key) => _normFnElement(Fn, key), "normPrivateKeyToScalar"),
     precompute(windowSize = 8, point = Point.BASE) {
       return point.precompute(windowSize, false);
     }
@@ -2405,6 +2505,7 @@ function ecdh(Point, ecdhOpts = {}) {
   return Object.freeze({ getPublicKey, getSharedSecret, keygen, Point, utils, lengths });
 }
 __name(ecdh, "ecdh");
+__name2(ecdh, "ecdh");
 function ecdsa(Point, hash, ecdsaOpts = {}) {
   ahash(hash);
   _validateObject(ecdsaOpts, {}, {
@@ -2432,12 +2533,14 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
     return number > HALF;
   }
   __name(isBiggerThanHalfOrder, "isBiggerThanHalfOrder");
+  __name2(isBiggerThanHalfOrder, "isBiggerThanHalfOrder");
   function validateRS(title, num2) {
     if (!Fn.isValidNot0(num2))
       throw new Error(`invalid signature ${title}: out of range 1..Point.Fn.ORDER`);
     return num2;
   }
   __name(validateRS, "validateRS");
+  __name2(validateRS, "validateRS");
   function validateSigLength(bytes, format) {
     validateSigFormat(format);
     const size = lengths.signature;
@@ -2445,7 +2548,11 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
     return _abytes2(bytes, sizer, `${format} signature`);
   }
   __name(validateSigLength, "validateSigLength");
-  const _Signature = class _Signature {
+  __name2(validateSigLength, "validateSigLength");
+  const _Signature = class _Signature2 {
+    static {
+      __name(this, "_Signature");
+    }
     constructor(r, s, recovery) {
       this.r = validateRS("r", r);
       this.s = validateRS("s", s);
@@ -2458,7 +2565,7 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
       let recid;
       if (format === "der") {
         const { r: r2, s: s2 } = DER.toSig(_abytes2(bytes));
-        return new _Signature(r2, s2);
+        return new _Signature2(r2, s2);
       }
       if (format === "recovered") {
         recid = bytes[0];
@@ -2468,13 +2575,13 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
       const L = Fn.BYTES;
       const r = bytes.subarray(0, L);
       const s = bytes.subarray(L, L * 2);
-      return new _Signature(Fn.fromBytes(r), Fn.fromBytes(s), recid);
+      return new _Signature2(Fn.fromBytes(r), Fn.fromBytes(s), recid);
     }
     static fromHex(hex, format) {
       return this.fromBytes(hexToBytes(hex), format);
     }
     addRecoveryBit(recovery) {
-      return new _Signature(this.r, this.s, recovery);
+      return new _Signature2(this.r, this.s, recovery);
     }
     recoverPublicKey(messageHash) {
       const FIELD_ORDER = Fp.ORDER;
@@ -2523,13 +2630,13 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
     assertValidity() {
     }
     static fromCompact(hex) {
-      return _Signature.fromBytes(ensureBytes("sig", hex), "compact");
+      return _Signature2.fromBytes(ensureBytes("sig", hex), "compact");
     }
     static fromDER(hex) {
-      return _Signature.fromBytes(ensureBytes("sig", hex), "der");
+      return _Signature2.fromBytes(ensureBytes("sig", hex), "der");
     }
     normalizeS() {
-      return this.hasHighS() ? new _Signature(this.r, Fn.neg(this.s), this.recovery) : this;
+      return this.hasHighS() ? new _Signature2(this.r, Fn.neg(this.s), this.recovery) : this;
     }
     toDERRawBytes() {
       return this.toBytes("der");
@@ -2544,29 +2651,31 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
       return bytesToHex(this.toBytes("compact"));
     }
   };
-  __name(_Signature, "Signature");
+  __name2(_Signature, "Signature");
   let Signature = _Signature;
-  const bits2int = ecdsaOpts.bits2int || /* @__PURE__ */ __name(function bits2int_def(bytes) {
+  const bits2int = ecdsaOpts.bits2int || /* @__PURE__ */ __name2(/* @__PURE__ */ __name(function bits2int_def(bytes) {
     if (bytes.length > 8192)
       throw new Error("input is too large");
     const num2 = bytesToNumberBE(bytes);
     const delta = bytes.length * 8 - fnBits;
     return delta > 0 ? num2 >> BigInt(delta) : num2;
-  }, "bits2int_def");
-  const bits2int_modN = ecdsaOpts.bits2int_modN || /* @__PURE__ */ __name(function bits2int_modN_def(bytes) {
+  }, "bits2int_def"), "bits2int_def");
+  const bits2int_modN = ecdsaOpts.bits2int_modN || /* @__PURE__ */ __name2(/* @__PURE__ */ __name(function bits2int_modN_def(bytes) {
     return Fn.create(bits2int(bytes));
-  }, "bits2int_modN_def");
+  }, "bits2int_modN_def"), "bits2int_modN_def");
   const ORDER_MASK = bitMask(fnBits);
   function int2octets(num2) {
     aInRange("num < 2^" + fnBits, num2, _0n4, ORDER_MASK);
     return Fn.toBytes(num2);
   }
   __name(int2octets, "int2octets");
+  __name2(int2octets, "int2octets");
   function validateMsgAndHash(message, prehash) {
     _abytes2(message, void 0, "message");
     return prehash ? _abytes2(hash(message), void 0, "prehashed message") : message;
   }
   __name(validateMsgAndHash, "validateMsgAndHash");
+  __name2(validateMsgAndHash, "validateMsgAndHash");
   function prepSig(message, privateKey, opts) {
     if (["recovered", "canonical"].some((k) => k in opts))
       throw new Error("sign() legacy options not supported");
@@ -2602,9 +2711,11 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
       return new Signature(r, normS, recovery);
     }
     __name(k2sig, "k2sig");
+    __name2(k2sig, "k2sig");
     return { seed, k2sig };
   }
   __name(prepSig, "prepSig");
+  __name2(prepSig, "prepSig");
   function sign(message, secretKey, opts = {}) {
     message = ensureBytes("message", message);
     const { seed, k2sig } = prepSig(message, secretKey, opts);
@@ -2613,6 +2724,7 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
     return sig;
   }
   __name(sign, "sign");
+  __name2(sign, "sign");
   function tryParsingSig(sg) {
     let sig = void 0;
     const isHex = typeof sg === "string" || isBytes(sg);
@@ -2641,6 +2753,7 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
     return sig;
   }
   __name(tryParsingSig, "tryParsingSig");
+  __name2(tryParsingSig, "tryParsingSig");
   function verify(signature, message, publicKey, opts = {}) {
     const { lowS, prehash, format } = validateSigOpts(opts, defaultSigOpts);
     publicKey = ensureBytes("publicKey", publicKey);
@@ -2669,12 +2782,14 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
     }
   }
   __name(verify, "verify");
+  __name2(verify, "verify");
   function recoverPublicKey(signature, message, opts = {}) {
     const { prehash } = validateSigOpts(opts, defaultSigOpts);
     message = validateMsgAndHash(message, prehash);
     return Signature.fromBytes(signature, "recovered").recoverPublicKey(message).toBytes();
   }
   __name(recoverPublicKey, "recoverPublicKey");
+  __name2(recoverPublicKey, "recoverPublicKey");
   return Object.freeze({
     keygen,
     getPublicKey,
@@ -2690,6 +2805,7 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
   });
 }
 __name(ecdsa, "ecdsa");
+__name2(ecdsa, "ecdsa");
 function _weierstrass_legacy_opts_to_new(c) {
   const CURVE = {
     a: c.a,
@@ -2720,6 +2836,7 @@ function _weierstrass_legacy_opts_to_new(c) {
   return { CURVE, curveOpts };
 }
 __name(_weierstrass_legacy_opts_to_new, "_weierstrass_legacy_opts_to_new");
+__name2(_weierstrass_legacy_opts_to_new, "_weierstrass_legacy_opts_to_new");
 function _ecdsa_legacy_opts_to_new(c) {
   const { CURVE, curveOpts } = _weierstrass_legacy_opts_to_new(c);
   const ecdsaOpts = {
@@ -2732,6 +2849,7 @@ function _ecdsa_legacy_opts_to_new(c) {
   return { CURVE, curveOpts, hash: c.hash, ecdsaOpts };
 }
 __name(_ecdsa_legacy_opts_to_new, "_ecdsa_legacy_opts_to_new");
+__name2(_ecdsa_legacy_opts_to_new, "_ecdsa_legacy_opts_to_new");
 function _ecdsa_new_output_to_legacy(c, _ecdsa) {
   const Point = _ecdsa.Point;
   return Object.assign({}, _ecdsa, {
@@ -2740,6 +2858,7 @@ function _ecdsa_new_output_to_legacy(c, _ecdsa) {
   });
 }
 __name(_ecdsa_new_output_to_legacy, "_ecdsa_new_output_to_legacy");
+__name2(_ecdsa_new_output_to_legacy, "_ecdsa_new_output_to_legacy");
 function weierstrass(c) {
   const { CURVE, curveOpts, hash, ecdsaOpts } = _ecdsa_legacy_opts_to_new(c);
   const Point = weierstrassN(CURVE, curveOpts);
@@ -2747,15 +2866,13 @@ function weierstrass(c) {
   return _ecdsa_new_output_to_legacy(c, signs);
 }
 __name(weierstrass, "weierstrass");
-
-// node_modules/.pnpm/@noble+curves@1.9.7/node_modules/@noble/curves/esm/_shortw_utils.js
+__name2(weierstrass, "weierstrass");
 function createCurve(curveDef, defHash) {
-  const create = /* @__PURE__ */ __name((hash) => weierstrass({ ...curveDef, hash }), "create");
+  const create = /* @__PURE__ */ __name2((hash) => weierstrass({ ...curveDef, hash }), "create");
   return { ...create(defHash), create };
 }
 __name(createCurve, "createCurve");
-
-// node_modules/.pnpm/@noble+curves@1.9.7/node_modules/@noble/curves/esm/secp256k1.js
+__name2(createCurve, "createCurve");
 var secp256k1_CURVE = {
   p: BigInt("0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"),
   n: BigInt("0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141"),
@@ -2798,6 +2915,7 @@ function sqrtMod(y) {
   return root;
 }
 __name(sqrtMod, "sqrtMod");
+__name2(sqrtMod, "sqrtMod");
 var Fpk1 = Field(secp256k1_CURVE.p, { sqrt: sqrtMod });
 var secp256k1 = createCurve({ ...secp256k1_CURVE, Fp: Fpk1, lowS: true, endo: secp256k1_ENDO }, sha256);
 var TAGGED_HASH_PREFIXES = {};
@@ -2811,9 +2929,10 @@ function taggedHash(tag, ...messages) {
   return sha256(concatBytes(tagP, ...messages));
 }
 __name(taggedHash, "taggedHash");
-var pointToBytes = /* @__PURE__ */ __name((point) => point.toBytes(true).slice(1), "pointToBytes");
+__name2(taggedHash, "taggedHash");
+var pointToBytes = /* @__PURE__ */ __name2((point) => point.toBytes(true).slice(1), "pointToBytes");
 var Pointk1 = /* @__PURE__ */ (() => secp256k1.Point)();
-var hasEven = /* @__PURE__ */ __name((y) => y % _2n3 === _0n5, "hasEven");
+var hasEven = /* @__PURE__ */ __name2((y) => y % _2n3 === _0n5, "hasEven");
 function schnorrGetExtPubKey(priv) {
   const { Fn, BASE } = Pointk1;
   const d_ = _normFnElement(Fn, priv);
@@ -2822,6 +2941,7 @@ function schnorrGetExtPubKey(priv) {
   return { scalar, bytes: pointToBytes(p) };
 }
 __name(schnorrGetExtPubKey, "schnorrGetExtPubKey");
+__name2(schnorrGetExtPubKey, "schnorrGetExtPubKey");
 function lift_x(x) {
   const Fp = Fpk1;
   if (!Fp.isValidNot0(x))
@@ -2836,15 +2956,18 @@ function lift_x(x) {
   return p;
 }
 __name(lift_x, "lift_x");
+__name2(lift_x, "lift_x");
 var num = bytesToNumberBE;
 function challenge(...args) {
   return Pointk1.Fn.create(num(taggedHash("BIP0340/challenge", ...args)));
 }
 __name(challenge, "challenge");
+__name2(challenge, "challenge");
 function schnorrGetPublicKey(secretKey) {
   return schnorrGetExtPubKey(secretKey).bytes;
 }
 __name(schnorrGetPublicKey, "schnorrGetPublicKey");
+__name2(schnorrGetPublicKey, "schnorrGetPublicKey");
 function schnorrSign(message, secretKey, auxRand = randomBytes(32)) {
   const { Fn } = Pointk1;
   const m = ensureBytes("message", message);
@@ -2862,6 +2985,7 @@ function schnorrSign(message, secretKey, auxRand = randomBytes(32)) {
   return sig;
 }
 __name(schnorrSign, "schnorrSign");
+__name2(schnorrSign, "schnorrSign");
 function schnorrVerify(signature, message, publicKey) {
   const { Fn, BASE } = Pointk1;
   const sig = ensureBytes("signature", signature, 64);
@@ -2886,10 +3010,11 @@ function schnorrVerify(signature, message, publicKey) {
   }
 }
 __name(schnorrVerify, "schnorrVerify");
+__name2(schnorrVerify, "schnorrVerify");
 var schnorr = /* @__PURE__ */ (() => {
   const size = 32;
   const seedLength = 48;
-  const randomSecretKey = /* @__PURE__ */ __name((seed = randomBytes(seedLength)) => {
+  const randomSecretKey = /* @__PURE__ */ __name2((seed = randomBytes(seedLength)) => {
     return mapHashToField(seed, secp256k1_CURVE.n);
   }, "randomSecretKey");
   secp256k1.utils.randomSecretKey;
@@ -2898,6 +3023,7 @@ var schnorr = /* @__PURE__ */ (() => {
     return { secretKey, publicKey: schnorrGetPublicKey(secretKey) };
   }
   __name(keygen, "keygen");
+  __name2(keygen, "keygen");
   return {
     keygen,
     getPublicKey: schnorrGetPublicKey,
@@ -2924,8 +3050,6 @@ var schnorr = /* @__PURE__ */ (() => {
     }
   };
 })();
-
-// src/relay-worker.ts
 var {
   relayInfo: relayInfo2,
   PAY_TO_RELAY_ENABLED: PAY_TO_RELAY_ENABLED2,
@@ -3192,6 +3316,7 @@ async function initializeDatabase(db) {
   }
 }
 __name(initializeDatabase, "initializeDatabase");
+__name2(initializeDatabase, "initializeDatabase");
 async function verifyEventSignature(event) {
   try {
     const signatureBytes = hexToBytes2(event.sig);
@@ -3209,6 +3334,7 @@ async function verifyEventSignature(event) {
   }
 }
 __name(verifyEventSignature, "verifyEventSignature");
+__name2(verifyEventSignature, "verifyEventSignature");
 function serializeEventForSigning(event) {
   return JSON.stringify([
     0,
@@ -3220,6 +3346,7 @@ function serializeEventForSigning(event) {
   ]);
 }
 __name(serializeEventForSigning, "serializeEventForSigning");
+__name2(serializeEventForSigning, "serializeEventForSigning");
 function hexToBytes2(hexString) {
   if (hexString.length % 2 !== 0)
     throw new Error("Invalid hex string");
@@ -3229,11 +3356,13 @@ function hexToBytes2(hexString) {
   }
   return bytes;
 }
-__name(hexToBytes2, "hexToBytes");
+__name(hexToBytes2, "hexToBytes2");
+__name2(hexToBytes2, "hexToBytes");
 function bytesToHex2(bytes) {
   return Array.from(bytes).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
-__name(bytesToHex2, "bytesToHex");
+__name(bytesToHex2, "bytesToHex2");
+__name2(bytesToHex2, "bytesToHex");
 async function hashContent(event) {
   const contentToHash = enableGlobalDuplicateCheck2 ? JSON.stringify({ kind: event.kind, tags: event.tags, content: event.content }) : JSON.stringify({ pubkey: event.pubkey, kind: event.kind, tags: event.tags, content: event.content });
   const buffer = new TextEncoder().encode(contentToHash);
@@ -3241,10 +3370,12 @@ async function hashContent(event) {
   return bytesToHex2(new Uint8Array(hashBuffer));
 }
 __name(hashContent, "hashContent");
+__name2(hashContent, "hashContent");
 function shouldCheckForDuplicates(kind) {
   return enableAntiSpam2 && antiSpamKinds2.has(kind);
 }
 __name(shouldCheckForDuplicates, "shouldCheckForDuplicates");
+__name2(shouldCheckForDuplicates, "shouldCheckForDuplicates");
 async function hasPaidForRelay(pubkey, env) {
   if (!PAY_TO_RELAY_ENABLED2)
     return true;
@@ -3260,6 +3391,7 @@ async function hasPaidForRelay(pubkey, env) {
   }
 }
 __name(hasPaidForRelay, "hasPaidForRelay");
+__name2(hasPaidForRelay, "hasPaidForRelay");
 async function savePaidPubkey(pubkey, env) {
   try {
     const session = env.RELAY_DATABASE.withSession("first-primary");
@@ -3277,12 +3409,13 @@ async function savePaidPubkey(pubkey, env) {
   }
 }
 __name(savePaidPubkey, "savePaidPubkey");
+__name2(savePaidPubkey, "savePaidPubkey");
 function fetchEventFromFallbackRelay(pubkey) {
   return new Promise((resolve, reject) => {
     const fallbackRelayUrl = "wss://relay.primal.net";
     const ws = new WebSocket(fallbackRelayUrl);
     let hasClosed = false;
-    const closeWebSocket = /* @__PURE__ */ __name((subscriptionId) => {
+    const closeWebSocket = /* @__PURE__ */ __name2((subscriptionId) => {
       if (!hasClosed && ws.readyState === WebSocket.OPEN) {
         if (subscriptionId) {
           ws.send(JSON.stringify(["CLOSE", subscriptionId]));
@@ -3343,6 +3476,7 @@ function fetchEventFromFallbackRelay(pubkey) {
   });
 }
 __name(fetchEventFromFallbackRelay, "fetchEventFromFallbackRelay");
+__name2(fetchEventFromFallbackRelay, "fetchEventFromFallbackRelay");
 async function fetchKind0EventForPubkey(pubkey, env) {
   try {
     const filters = [{ kinds: [0], authors: [pubkey], limit: 1 }];
@@ -3361,6 +3495,7 @@ async function fetchKind0EventForPubkey(pubkey, env) {
   return null;
 }
 __name(fetchKind0EventForPubkey, "fetchKind0EventForPubkey");
+__name2(fetchKind0EventForPubkey, "fetchKind0EventForPubkey");
 async function validateNIP05FromKind0(pubkey, env) {
   try {
     const metadataEvent = await fetchKind0EventForPubkey(pubkey, env);
@@ -3382,6 +3517,7 @@ async function validateNIP05FromKind0(pubkey, env) {
   }
 }
 __name(validateNIP05FromKind0, "validateNIP05FromKind0");
+__name2(validateNIP05FromKind0, "validateNIP05FromKind0");
 async function validateNIP05(nip05Address, pubkey) {
   try {
     const [name, domain] = nip05Address.split("@");
@@ -3415,6 +3551,7 @@ async function validateNIP05(nip05Address, pubkey) {
   }
 }
 __name(validateNIP05, "validateNIP05");
+__name2(validateNIP05, "validateNIP05");
 function calculateQueryComplexity(filter) {
   let complexity = 0;
   complexity += (filter.ids?.length || 0) * 1;
@@ -3434,6 +3571,7 @@ function calculateQueryComplexity(filter) {
   return complexity;
 }
 __name(calculateQueryComplexity, "calculateQueryComplexity");
+__name2(calculateQueryComplexity, "calculateQueryComplexity");
 async function processEvent(event, sessionId, env) {
   try {
     if (event.kind !== 1059 && checkValidNip052 && event.kind !== 0) {
@@ -3456,6 +3594,7 @@ async function processEvent(event, sessionId, env) {
   }
 }
 __name(processEvent, "processEvent");
+__name2(processEvent, "processEvent");
 async function saveEventToDatabase(event, env) {
   try {
     const cache = caches.default;
@@ -3626,6 +3765,7 @@ async function saveEventToDatabase(event, env) {
   }
 }
 __name(saveEventToDatabase, "saveEventToDatabase");
+__name2(saveEventToDatabase, "saveEventToDatabase");
 async function processDeletionEvent(event, env) {
   console.log(`Processing deletion event ${event.id}`);
   const deletedEventIds = event.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1]);
@@ -3696,6 +3836,7 @@ async function processDeletionEvent(event, env) {
   };
 }
 __name(processDeletionEvent, "processDeletionEvent");
+__name2(processDeletionEvent, "processDeletionEvent");
 function chunkArray(array, chunkSize) {
   const chunks = [];
   for (let i = 0; i < array.length; i += chunkSize) {
@@ -3704,6 +3845,7 @@ function chunkArray(array, chunkSize) {
   return chunks;
 }
 __name(chunkArray, "chunkArray");
+__name2(chunkArray, "chunkArray");
 var EVENT_COLS = "e.id, e.pubkey, e.created_at, e.kind, e.tags, e.content, e.sig";
 var EVENT_COLS_BARE = "id, pubkey, created_at, kind, tags, content, sig";
 function buildCountQuery(filter) {
@@ -3867,6 +4009,7 @@ function buildCountQuery(filter) {
   return { sql, params };
 }
 __name(buildCountQuery, "buildCountQuery");
+__name2(buildCountQuery, "buildCountQuery");
 function buildQuery(filter) {
   const params = [];
   const conditions = [];
@@ -4093,6 +4236,7 @@ function buildQuery(filter) {
   return { sql, params };
 }
 __name(buildQuery, "buildQuery");
+__name2(buildQuery, "buildQuery");
 async function queryDatabaseChunked(filter, bookmark, env) {
   const session = env.RELAY_DATABASE.withSession(bookmark);
   const allRows = /* @__PURE__ */ new Map();
@@ -4121,7 +4265,7 @@ async function queryDatabaseChunked(filter, bookmark, env) {
       delete baseFilter[key];
     }
   }
-  const processStringChunks = /* @__PURE__ */ __name(async (filterType, values) => {
+  const processStringChunks = /* @__PURE__ */ __name2(async (filterType, values) => {
     const chunks = chunkArray(values, CHUNK_SIZE);
     for (const chunk of chunks) {
       const chunkFilter = { ...baseFilter };
@@ -4143,7 +4287,7 @@ async function queryDatabaseChunked(filter, bookmark, env) {
       }
     }
   }, "processStringChunks");
-  const processNumberChunks = /* @__PURE__ */ __name(async (filterType, values) => {
+  const processNumberChunks = /* @__PURE__ */ __name2(async (filterType, values) => {
     const chunks = chunkArray(values, CHUNK_SIZE);
     for (const chunk of chunks) {
       const chunkFilter = { ...baseFilter };
@@ -4198,6 +4342,7 @@ async function queryDatabaseChunked(filter, bookmark, env) {
   return { events };
 }
 __name(queryDatabaseChunked, "queryDatabaseChunked");
+__name2(queryDatabaseChunked, "queryDatabaseChunked");
 async function queryEvents(filters, bookmark, env) {
   try {
     console.log(`Processing query with ${filters.length} filters and bookmark: ${bookmark}`);
@@ -4315,6 +4460,7 @@ async function queryEvents(filters, bookmark, env) {
   }
 }
 __name(queryEvents, "queryEvents");
+__name2(queryEvents, "queryEvents");
 function handleRelayInfoRequest(request) {
   const responseInfo = { ...relayInfo2 };
   if (PAY_TO_RELAY_ENABLED2) {
@@ -4335,6 +4481,7 @@ function handleRelayInfoRequest(request) {
   });
 }
 __name(handleRelayInfoRequest, "handleRelayInfoRequest");
+__name2(handleRelayInfoRequest, "handleRelayInfoRequest");
 function serveLandingPage() {
   const payToRelaySection = PAY_TO_RELAY_ENABLED2 ? `
     <div class="pay-section" id="paySection">
@@ -4669,8 +4816,8 @@ function serveLandingPage() {
             initPayment();
         }
         ` : ""}
-    </script>
-    ${PAY_TO_RELAY_ENABLED2 ? '<script src="https://unpkg.com/nostr-login@latest/dist/unpkg.js" data-perms="sign_event:1" data-methods="connect,extension,local" data-dark-mode="true"></script>' : ""}
+    <\/script>
+    ${PAY_TO_RELAY_ENABLED2 ? '<script src="https://unpkg.com/nostr-login@latest/dist/unpkg.js" data-perms="sign_event:1" data-methods="connect,extension,local" data-dark-mode="true"><\/script>' : ""}
 </body>
 </html>
   `;
@@ -4683,6 +4830,7 @@ function serveLandingPage() {
   });
 }
 __name(serveLandingPage, "serveLandingPage");
+__name2(serveLandingPage, "serveLandingPage");
 async function serveFavicon() {
   const response = await fetch(relayInfo2.icon);
   if (response.ok) {
@@ -4696,6 +4844,7 @@ async function serveFavicon() {
   return new Response(null, { status: 404 });
 }
 __name(serveFavicon, "serveFavicon");
+__name2(serveFavicon, "serveFavicon");
 function handleNIP05Request(url) {
   const name = url.searchParams.get("name");
   if (!name) {
@@ -4724,6 +4873,7 @@ function handleNIP05Request(url) {
   });
 }
 __name(handleNIP05Request, "handleNIP05Request");
+__name2(handleNIP05Request, "handleNIP05Request");
 async function handleCheckPayment(request, env) {
   const url = new URL(request.url);
   const pubkey = url.searchParams.get("pubkey");
@@ -4749,6 +4899,7 @@ async function handleCheckPayment(request, env) {
   });
 }
 __name(handleCheckPayment, "handleCheckPayment");
+__name2(handleCheckPayment, "handleCheckPayment");
 async function handlePaymentNotification(request, env) {
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -4788,6 +4939,7 @@ async function handlePaymentNotification(request, env) {
   }
 }
 __name(handlePaymentNotification, "handlePaymentNotification");
+__name2(handlePaymentNotification, "handlePaymentNotification");
 async function getOptimalDO(cf, env, url) {
   const continent = cf?.continent || "NA";
   const country = cf?.country || "US";
@@ -5113,6 +5265,7 @@ async function getOptimalDO(cf, env, url) {
   return { stub, doName: fallback.name };
 }
 __name(getOptimalDO, "getOptimalDO");
+__name2(getOptimalDO, "getOptimalDO");
 async function getDatabaseSizeBytes(session) {
   try {
     const result = await session.prepare("SELECT 1").run();
@@ -5127,6 +5280,7 @@ async function getDatabaseSizeBytes(session) {
   }
 }
 __name(getDatabaseSizeBytes, "getDatabaseSizeBytes");
+__name2(getDatabaseSizeBytes, "getDatabaseSizeBytes");
 async function pruneOldEvents(session, targetSizeBytes) {
   let totalEventsDeleted = 0;
   let currentSize = await getDatabaseSizeBytes(session);
@@ -5163,6 +5317,7 @@ async function pruneOldEvents(session, targetSizeBytes) {
   return { eventsDeleted: totalEventsDeleted, finalSizeBytes: currentSize };
 }
 __name(pruneOldEvents, "pruneOldEvents");
+__name2(pruneOldEvents, "pruneOldEvents");
 var relay_worker_default = {
   async fetch(request, env, ctx) {
     try {
@@ -5239,26 +5394,20 @@ var relay_worker_default = {
     }
   }
 };
-
-// src/durable-object.ts
-var _RelayWebSocket = class _RelayWebSocket {
+var _RelayWebSocket = class _RelayWebSocket2 {
+  static {
+    __name(this, "_RelayWebSocket");
+  }
   constructor(state, env) {
     this.processedEvents = /* @__PURE__ */ new Map();
-    // eventId -> timestamp
-    // Query cache for REQ messages
     this.queryCache = /* @__PURE__ */ new Map();
     this.QUERY_CACHE_TTL = 6e4;
     this.MAX_CACHE_SIZE = 100;
-    // Query cache index for efficient invalidation (kind:X, author:Y, etc.)
     this.queryCacheIndex = /* @__PURE__ */ new Map();
-    // Active queries for deduplication (prevent duplicate work)
     this.activeQueries = /* @__PURE__ */ new Map();
-    // Payment status cache
     this.paymentCache = /* @__PURE__ */ new Map();
     this.PAYMENT_CACHE_TTL = 6e4;
-    // Alarm and cleanup configuration
     this.IDLE_TIMEOUT = 5 * 60 * 1e3;
-    // 5 minutes
     this.lastActivityTime = Date.now();
     this.state = state;
     this.sessions = /* @__PURE__ */ new Map();
@@ -5566,7 +5715,7 @@ var _RelayWebSocket = class _RelayWebSocket {
   async fetch(request) {
     const url = new URL(request.url);
     const urlDoName = url.searchParams.get("doName");
-    if (urlDoName && urlDoName !== "unknown" && _RelayWebSocket.ALLOWED_ENDPOINTS.includes(urlDoName)) {
+    if (urlDoName && urlDoName !== "unknown" && _RelayWebSocket2.ALLOWED_ENDPOINTS.includes(urlDoName)) {
       this.doName = urlDoName;
     }
     if (url.pathname === "/do-broadcast") {
@@ -6056,7 +6205,7 @@ var _RelayWebSocket = class _RelayWebSocket {
   }
   async broadcastToOtherDOs(event) {
     const broadcasts = [];
-    for (const endpoint of _RelayWebSocket.ALLOWED_ENDPOINTS) {
+    for (const endpoint of _RelayWebSocket2.ALLOWED_ENDPOINTS) {
       if (endpoint === this.doName)
         continue;
       broadcasts.push(this.sendToSpecificDO(endpoint, event));
@@ -6074,11 +6223,11 @@ var _RelayWebSocket = class _RelayWebSocket {
   }
   async sendToSpecificDO(doName, event) {
     try {
-      if (!_RelayWebSocket.ALLOWED_ENDPOINTS.includes(doName)) {
+      if (!_RelayWebSocket2.ALLOWED_ENDPOINTS.includes(doName)) {
         throw new Error(`Invalid DO name: ${doName}`);
       }
       const id = this.env.RELAY_WEBSOCKET.idFromName(doName);
-      const locationHint = _RelayWebSocket.ENDPOINT_HINTS[doName] || "auto";
+      const locationHint = _RelayWebSocket2.ENDPOINT_HINTS[doName] || "auto";
       const stub = this.env.RELAY_WEBSOCKET.get(id, { locationHint });
       const url = new URL("https://internal/do-broadcast");
       url.searchParams.set("doName", doName);
@@ -6181,8 +6330,7 @@ var _RelayWebSocket = class _RelayWebSocket {
     }
   }
 };
-__name(_RelayWebSocket, "RelayWebSocket");
-// Define allowed endpoints
+__name2(_RelayWebSocket, "RelayWebSocket");
 _RelayWebSocket.ALLOWED_ENDPOINTS = [
   "relay-WNAM-primary",
   // Western North America
@@ -6203,7 +6351,6 @@ _RelayWebSocket.ALLOWED_ENDPOINTS = [
   "relay-ME-primary"
   // Middle East (redirects to eeur)
 ];
-// Map endpoints to their proper location hints
 _RelayWebSocket.ENDPOINT_HINTS = {
   "relay-WNAM-primary": "wnam",
   "relay-ENAM-primary": "enam",
@@ -6246,3 +6393,4 @@ export {
 @noble/curves/esm/secp256k1.js:
   (*! noble-curves - MIT License (c) 2022 Paul Miller (paulmillr.com) *)
 */
+//# sourceMappingURL=worker.js.map
