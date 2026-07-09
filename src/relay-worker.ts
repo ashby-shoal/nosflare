@@ -2199,7 +2199,7 @@ function serveLandingPage(): Response {
       </head>
       <body>
 
-        <h1>Latest 7 Nostr Events</h1>
+        <h1>Latest Nostr Events</h1>
 
         <button id="reloadBtn">Reload Events</button>
 
