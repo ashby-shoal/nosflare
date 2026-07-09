@@ -285,6 +285,7 @@ var blockedPubkeys = /* @__PURE__ */ new Set([
   "53a756bb596055219d93e888f71d936ec6c47d960320476c955efd8941af4362"
 ]);
 var allowedPubkeys = /* @__PURE__ */ new Set([
+  "c1ca677ab2863f4135d0a9e19062cf1997483f7592895d716249dd8d6b3b416c",
   "b6f2c7a925558bb34c60dd6616647987b89f618e82a16de65e0a4b463f28b974",
   "d130ad0f91722f3e8c66522c54b7ee1e73dcb537e6944b7bf2cbb933d4bf7b2a",
   "40f8d4e642843d5ab39c2147531efe00f496bb2941de7a2a77c0cf6d7db202bd"
@@ -4520,7 +4521,7 @@ function serveLandingPage() {
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Nostr Relay Event Viewer</title>
+        <title>Nostr Event Viewer</title>
 
         <style>
           * {
@@ -4624,7 +4625,7 @@ function serveLandingPage() {
       </head>
       <body>
 
-        <h1>Latest 7 Nostr Events</h1>
+        <h1>Latest Nostr Events</h1>
 
         <button id="reloadBtn">Reload Events</button>
 
