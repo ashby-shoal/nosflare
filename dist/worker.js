@@ -71,7 +71,7 @@ __export(config_exports, {
   relayInfo: /* @__PURE__ */ __name(() => relayInfo, "relayInfo"),
   relayNpub: /* @__PURE__ */ __name(() => relayNpub, "relayNpub")
 });
-var relayNpub = "npub16jdfqgazrkapk0yrqm9rdxlnys7ck39c7zmdzxtxqlmmpxg04r0sd733sv";
+var relayNpub = "npub1a9x0vruhw343esj2rctzqztltcfwuf6lzcs7phawc5uyu0lwyjpsgc57sf";
 var PAY_TO_RELAY_ENABLED = false;
 var RELAY_ACCESS_PRICE_SATS = 212121;
 var AUTH_REQUIRED = false;
@@ -79,9 +79,29 @@ var AUTH_TIMEOUT_MS = 6e5;
 var relayInfo = {
   name: "Nosflare",
   description: "A serverless Nostr relay through Cloudflare Worker and D1 database",
-  pubkey: "d49a9023a21dba1b3c8306ca369bf3243d8b44b8f0b6d1196607f7b0990fa8df",
-  contact: "lux@fed.wtf",
-  supported_nips: [1, 2, 4, 5, 9, 11, 12, 13, 15, 16, 17, 20, 22, 25, 28, 33, 40, 42, 57],
+  pubkey: "npub1a9x0vruhw343esj2rctzqztltcfwuf6lzcs7phawc5uyu0lwyjpsgc57sf",
+  contact: "cole@ashby-shoal.com",
+  supported_nips: [
+    1,
+    2,
+    4,
+    5,
+    9,
+    11,
+    12,
+    13,
+    15,
+    16,
+    17,
+    20,
+    22,
+    25,
+    28,
+    33,
+    40,
+    42,
+    57
+  ],
   software: "https://github.com/Spl0itable/nosflare",
   version: "7.9.45",
   icon: "https://raw.githubusercontent.com/Spl0itable/nosflare/main/images/flare.png",
@@ -127,7 +147,7 @@ var relayInfo = {
   // }
 };
 var nip05Users = {
-  "Luxas": "d49a9023a21dba1b3c8306ca369bf3243d8b44b8f0b6d1196607f7b0990fa8df"
+  Luxas: "d49a9023a21dba1b3c8306ca369bf3243d8b44b8f0b6d1196607f7b0990fa8df"
   // ... more NIP-05 verified users
 };
 var enableAntiSpam = false;
@@ -293,10 +313,9 @@ var allowedPubkeys = /* @__PURE__ */ new Set([
   "658a771af5a4f10d7ef6a13d19874186ed98ecf0da25e61e424a1bb51cc6aa51"
   // ... pubkeys that are explicitly allowed
 ]);
-var blockedEventKinds = /* @__PURE__ */ new Set([
-  1064
-]);
+var blockedEventKinds = /* @__PURE__ */ new Set([1064]);
 var allowedEventKinds = /* @__PURE__ */ new Set([
+  7777
   // ... kinds that are explicitly allowed
 ]);
 var blockedContent = /* @__PURE__ */ new Set([
@@ -334,8 +353,9 @@ var pruneProtectedKinds = /* @__PURE__ */ new Set([
   // Profile metadata
   3,
   // Contact list / follows
-  10002
+  10002,
   // Relay list metadata
+  7777
 ]);
 function isPubkeyAllowed(pubkey) {
   if (allowedPubkeys.size > 0 && !allowedPubkeys.has(pubkey)) {

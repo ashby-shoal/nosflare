@@ -1,7 +1,14 @@
 import { schnorr } from "@noble/curves/secp256k1.js";
-import { Env, NostrEvent, NostrFilter, QueryResult, NostrMessage, Nip05Response } from './types';
-import * as config from './config';
-import { RelayWebSocket } from './durable-object';
+import {
+  Env,
+  NostrEvent,
+  NostrFilter,
+  QueryResult,
+  NostrMessage,
+  Nip05Response,
+} from "./types";
+import * as config from "./config";
+import { RelayWebSocket } from "./durable-object";
 
 // Import config values
 const {
@@ -30,73 +37,88 @@ const CHUNK_SIZE = 500;
 
 // Database initialization
 async function initializeDatabase(db: D1Database): Promise<void> {
-  const dropSession = db.withSession('first-primary');
+  const dropSession = db.withSession("first-primary");
 
   try {
-    await dropSession.prepare(`
+    await dropSession
+      .prepare(
+        `
       CREATE TABLE IF NOT EXISTS system_config (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
         created_at INTEGER DEFAULT (strftime('%s', 'now'))
       )
-    `).run();
+    `,
+      )
+      .run();
   } catch (_) {}
 
-  const cleanupDone = await dropSession.prepare(
-    "SELECT value FROM system_config WHERE key = 'cleanup_v1' LIMIT 1"
-  ).first().catch(() => null);
+  const cleanupDone = await dropSession
+    .prepare("SELECT value FROM system_config WHERE key = 'cleanup_v1' LIMIT 1")
+    .first()
+    .catch(() => null);
 
-  if (!cleanupDone || cleanupDone.value !== '1') {
+  if (!cleanupDone || cleanupDone.value !== "1") {
     const dropIndexes = [
-      'idx_events_pubkey',
-      'idx_events_kind',
-      'idx_events_created_at_kind',
-      'idx_events_authors_kinds',
-      'idx_events_tag_p_created_at',
-      'idx_events_tag_e_created_at',
-      'idx_events_tag_a_created_at',
-      'idx_events_tag_t_created_at',
-      'idx_events_tag_d_created_at',
-      'idx_events_tag_r_created_at',
-      'idx_events_tag_L_created_at',
-      'idx_events_tag_s_created_at',
-      'idx_events_tag_u_created_at',
-      'idx_events_kind_tag_p',
-      'idx_events_kind_tag_e',
-      'idx_events_kind_tag_a',
-      'idx_events_kind_tag_t',
-      'idx_events_kind_tag_L',
-      'idx_events_kind_tag_s',
-      'idx_events_reply_to',
-      'idx_events_root_thread',
-      'idx_events_kind_created_at_covering',
-      'idx_events_pubkey_kind_created_at_covering',
-      'idx_events_created_at_covering',
-      'idx_events_kind_pubkey_created_at_covering',
-      'idx_tags_name_value',
-      'idx_tags_value',
-      'idx_tags_name_value_event_created',
+      "idx_events_pubkey",
+      "idx_events_kind",
+      "idx_events_created_at_kind",
+      "idx_events_authors_kinds",
+      "idx_events_tag_p_created_at",
+      "idx_events_tag_e_created_at",
+      "idx_events_tag_a_created_at",
+      "idx_events_tag_t_created_at",
+      "idx_events_tag_d_created_at",
+      "idx_events_tag_r_created_at",
+      "idx_events_tag_L_created_at",
+      "idx_events_tag_s_created_at",
+      "idx_events_tag_u_created_at",
+      "idx_events_kind_tag_p",
+      "idx_events_kind_tag_e",
+      "idx_events_kind_tag_a",
+      "idx_events_kind_tag_t",
+      "idx_events_kind_tag_L",
+      "idx_events_kind_tag_s",
+      "idx_events_reply_to",
+      "idx_events_root_thread",
+      "idx_events_kind_created_at_covering",
+      "idx_events_pubkey_kind_created_at_covering",
+      "idx_events_created_at_covering",
+      "idx_events_kind_pubkey_created_at_covering",
+      "idx_tags_name_value",
+      "idx_tags_value",
+      "idx_tags_name_value_event_created",
     ];
     for (const idx of dropIndexes) {
       await dropSession.prepare(`DROP INDEX IF EXISTS ${idx}`).run();
     }
 
-    const dropTables = ['event_tags_cache', 'mv_follow_graph', 'mv_recent_notes', 'mv_timeline_cache'];
+    const dropTables = [
+      "event_tags_cache",
+      "mv_follow_graph",
+      "mv_recent_notes",
+      "mv_timeline_cache",
+    ];
     for (const tbl of dropTables) {
       await dropSession.prepare(`DROP TABLE IF EXISTS ${tbl}`).run();
     }
 
-    await dropSession.prepare(
-      "INSERT OR REPLACE INTO system_config (key, value) VALUES ('cleanup_v1', '1')"
-    ).run();
+    await dropSession
+      .prepare(
+        "INSERT OR REPLACE INTO system_config (key, value) VALUES ('cleanup_v1', '1')",
+      )
+      .run();
   }
 
   try {
-    const initCheck = await dropSession.prepare(
-      "SELECT value FROM system_config WHERE key = 'db_initialized' LIMIT 1"
-    ).first().catch(() => null);
+    const initCheck = await dropSession
+      .prepare(
+        "SELECT value FROM system_config WHERE key = 'db_initialized' LIMIT 1",
+      )
+      .first()
+      .catch(() => null);
 
-    if (initCheck && initCheck.value === '1') {
+    if (initCheck && initCheck.value === "1") {
       console.log("Database already initialized");
       return;
     }
@@ -104,16 +126,20 @@ async function initializeDatabase(db: D1Database): Promise<void> {
     console.log("Database not initialized, creating schema...");
   }
 
-  const session = db.withSession('first-primary');
+  const session = db.withSession("first-primary");
 
   try {
-    await session.prepare(`
+    await session
+      .prepare(
+        `
       CREATE TABLE IF NOT EXISTS system_config (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
         created_at INTEGER DEFAULT (strftime('%s', 'now'))
       )
-    `).run();
+    `,
+      )
+      .run();
 
     const statements = [
       `CREATE TABLE IF NOT EXISTS events (
@@ -184,7 +210,7 @@ async function initializeDatabase(db: D1Database): Promise<void> {
       )`,
       `CREATE INDEX IF NOT EXISTS idx_content_hashes_pubkey ON content_hashes(pubkey)`,
       `CREATE INDEX IF NOT EXISTS idx_content_hashes_created_at ON content_hashes(created_at DESC)`,
-      `CREATE INDEX IF NOT EXISTS idx_content_hashes_pubkey_created ON content_hashes(pubkey, created_at DESC)`
+      `CREATE INDEX IF NOT EXISTS idx_content_hashes_pubkey_created ON content_hashes(pubkey, created_at DESC)`,
     ];
 
     for (const statement of statements) {
@@ -192,31 +218,39 @@ async function initializeDatabase(db: D1Database): Promise<void> {
     }
 
     await session.prepare("PRAGMA foreign_keys = ON").run();
-    await session.prepare(
-      "INSERT OR REPLACE INTO system_config (key, value) VALUES ('db_initialized', '1')"
-    ).run();
+    await session
+      .prepare(
+        "INSERT OR REPLACE INTO system_config (key, value) VALUES ('db_initialized', '1')",
+      )
+      .run();
 
     // Check current schema version
-    const versionResult = await session.prepare(
-      "SELECT value FROM system_config WHERE key = 'schema_version'"
-    ).first() as { value: string } | null;
+    const versionResult = (await session
+      .prepare("SELECT value FROM system_config WHERE key = 'schema_version'")
+      .first()) as { value: string } | null;
     const currentVersion = versionResult ? parseInt(versionResult.value) : 0;
 
     if (currentVersion < 5) {
-      console.log('Migrating to schema version 5: adding and populating tag columns in events table...');
+      console.log(
+        "Migrating to schema version 5: adding and populating tag columns in events table...",
+      );
 
       // Add tag columns if they don't exist (for databases created before these columns were in CREATE TABLE)
-      const v5Columns = ['tag_p', 'tag_e', 'tag_a', 'tag_t', 'tag_d', 'tag_r'];
+      const v5Columns = ["tag_p", "tag_e", "tag_a", "tag_t", "tag_d", "tag_r"];
       for (const col of v5Columns) {
         try {
-          await session.prepare(`ALTER TABLE events ADD COLUMN ${col} TEXT`).run();
+          await session
+            .prepare(`ALTER TABLE events ADD COLUMN ${col} TEXT`)
+            .run();
         } catch (e: any) {
           // Column already exists — safe to ignore
-          if (!e.message?.includes('duplicate column')) throw e;
+          if (!e.message?.includes("duplicate column")) throw e;
         }
       }
 
-      await session.prepare(`
+      await session
+        .prepare(
+          `
         UPDATE events
         SET
           tag_p = (SELECT tag_value FROM tags WHERE event_id = events.id AND tag_name = 'p' LIMIT 1),
@@ -230,26 +264,41 @@ async function initializeDatabase(db: D1Database): Promise<void> {
           WHERE t.event_id = events.id
           AND t.tag_name IN ('p', 'e', 'a', 't', 'd', 'r')
         )
-      `).run();
+      `,
+        )
+        .run();
 
-      console.log('Schema v5 migration completed');
+      console.log("Schema v5 migration completed");
     }
 
     if (currentVersion < 6) {
-      console.log('Migrating to schema version 6: adding L/s/u tags and thread metadata...');
+      console.log(
+        "Migrating to schema version 6: adding L/s/u tags and thread metadata...",
+      );
 
       // Add columns if they don't exist (for databases created before these columns were in CREATE TABLE)
-      const v6Columns = ['tag_L', 'tag_s', 'tag_u', 'reply_to_event_id', 'root_event_id', 'content_preview'];
+      const v6Columns = [
+        "tag_L",
+        "tag_s",
+        "tag_u",
+        "reply_to_event_id",
+        "root_event_id",
+        "content_preview",
+      ];
       for (const col of v6Columns) {
         try {
-          await session.prepare(`ALTER TABLE events ADD COLUMN ${col} TEXT`).run();
+          await session
+            .prepare(`ALTER TABLE events ADD COLUMN ${col} TEXT`)
+            .run();
         } catch (e: any) {
           // Column already exists — safe to ignore
-          if (!e.message?.includes('duplicate column')) throw e;
+          if (!e.message?.includes("duplicate column")) throw e;
         }
       }
 
-      await session.prepare(`
+      await session
+        .prepare(
+          `
         UPDATE events
         SET
           tag_L = (SELECT tag_value FROM tags WHERE event_id = events.id AND tag_name = 'L' LIMIT 1),
@@ -272,17 +321,23 @@ async function initializeDatabase(db: D1Database): Promise<void> {
           WHERE t.event_id = events.id
           AND t.tag_name IN ('L', 's', 'u', 'e')
         ) OR LENGTH(content) > 0
-      `).run();
+      `,
+        )
+        .run();
 
-      console.log('Schema v6 migration completed');
+      console.log("Schema v6 migration completed");
     }
 
-    await session.prepare(
-      "INSERT OR REPLACE INTO system_config (key, value) VALUES ('schema_version', '6')"
-    ).run();
+    await session
+      .prepare(
+        "INSERT OR REPLACE INTO system_config (key, value) VALUES ('schema_version', '6')",
+      )
+      .run();
 
     // Populate multi-value cache from existing data
-    await session.prepare(`
+    await session
+      .prepare(
+        `
       INSERT OR IGNORE INTO event_tags_cache_multi (event_id, pubkey, kind, created_at, tag_type, tag_value)
       SELECT
         e.id,
@@ -294,7 +349,9 @@ async function initializeDatabase(db: D1Database): Promise<void> {
       FROM events e
       INNER JOIN tags t ON e.id = t.event_id
       WHERE t.tag_name IN ('p', 'e', 'a', 't', 'd', 'r', 'L', 's', 'u')
-    `).run();
+    `,
+      )
+      .run();
 
     // Run ANALYZE to initialize statistics
     await session.prepare("ANALYZE events").run();
@@ -315,7 +372,7 @@ async function verifyEventSignature(event: NostrEvent): Promise<boolean> {
     const serializedEventData = serializeEventForSigning(event);
     const messageHashBuffer = await crypto.subtle.digest(
       "SHA-256",
-      new TextEncoder().encode(serializedEventData)
+      new TextEncoder().encode(serializedEventData),
     );
     const messageHash = new Uint8Array(messageHashBuffer);
     const publicKeyBytes = hexToBytes(event.pubkey);
@@ -347,14 +404,25 @@ function hexToBytes(hexString: string): Uint8Array {
 }
 
 function bytesToHex(bytes: Uint8Array): string {
-  return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
+  return Array.from(bytes)
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 // Content hashing for anti-spam
 async function hashContent(event: NostrEvent): Promise<string> {
   const contentToHash = enableGlobalDuplicateCheck
-    ? JSON.stringify({ kind: event.kind, tags: event.tags, content: event.content })
-    : JSON.stringify({ pubkey: event.pubkey, kind: event.kind, tags: event.tags, content: event.content });
+    ? JSON.stringify({
+        kind: event.kind,
+        tags: event.tags,
+        content: event.content,
+      })
+    : JSON.stringify({
+        pubkey: event.pubkey,
+        kind: event.kind,
+        tags: event.tags,
+        content: event.content,
+      });
 
   const buffer = new TextEncoder().encode(contentToHash);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
@@ -366,14 +434,18 @@ function shouldCheckForDuplicates(kind: number): boolean {
 }
 
 // Payment handling
-async function hasPaidForRelay(pubkey: string, env: Env): Promise<boolean | null> {
+async function hasPaidForRelay(
+  pubkey: string,
+  env: Env,
+): Promise<boolean | null> {
   if (!PAY_TO_RELAY_ENABLED) return true;
 
   try {
-    const session = env.RELAY_DATABASE.withSession('first-unconstrained');
-    const result = await session.prepare(
-      "SELECT pubkey FROM paid_pubkeys WHERE pubkey = ? LIMIT 1"
-    ).bind(pubkey).first();
+    const session = env.RELAY_DATABASE.withSession("first-unconstrained");
+    const result = await session
+      .prepare("SELECT pubkey FROM paid_pubkeys WHERE pubkey = ? LIMIT 1")
+      .bind(pubkey)
+      .first();
     return result !== null;
   } catch (error) {
     console.error(`Error checking paid status for ${pubkey}:`, error);
@@ -383,14 +455,19 @@ async function hasPaidForRelay(pubkey: string, env: Env): Promise<boolean | null
 
 async function savePaidPubkey(pubkey: string, env: Env): Promise<boolean> {
   try {
-    const session = env.RELAY_DATABASE.withSession('first-primary');
-    await session.prepare(`
+    const session = env.RELAY_DATABASE.withSession("first-primary");
+    await session
+      .prepare(
+        `
       INSERT INTO paid_pubkeys (pubkey, paid_at, amount_sats)
       VALUES (?, ?, ?)
       ON CONFLICT(pubkey) DO UPDATE SET
         paid_at = excluded.paid_at,
         amount_sats = excluded.amount_sats
-    `).bind(pubkey, Math.floor(Date.now() / 1000), RELAY_ACCESS_PRICE_SATS).run();
+    `,
+      )
+      .bind(pubkey, Math.floor(Date.now() / 1000), RELAY_ACCESS_PRICE_SATS)
+      .run();
     return true;
   } catch (error) {
     console.error(`Error saving paid pubkey ${pubkey}:`, error);
@@ -399,9 +476,11 @@ async function savePaidPubkey(pubkey: string, env: Env): Promise<boolean> {
 }
 
 // Fetches kind 0 event from fallback relay
-function fetchEventFromFallbackRelay(pubkey: string): Promise<NostrEvent | null> {
+function fetchEventFromFallbackRelay(
+  pubkey: string,
+): Promise<NostrEvent | null> {
   return new Promise((resolve, reject) => {
-    const fallbackRelayUrl = 'wss://relay.primal.net';
+    const fallbackRelayUrl = "wss://relay.primal.net";
     const ws = new WebSocket(fallbackRelayUrl);
     let hasClosed = false;
 
@@ -412,23 +491,23 @@ function fetchEventFromFallbackRelay(pubkey: string): Promise<NostrEvent | null>
         }
         ws.close();
         hasClosed = true;
-        console.log('WebSocket connection to fallback relay closed');
+        console.log("WebSocket connection to fallback relay closed");
       }
     };
 
-    ws.addEventListener('open', () => {
+    ws.addEventListener("open", () => {
       console.log("WebSocket connection to fallback relay opened.");
       const subscriptionId = Math.random().toString(36).substr(2, 9);
       const filters = {
         kinds: [0],
         authors: [pubkey],
-        limit: 1
+        limit: 1,
       };
       const reqMessage = JSON.stringify(["REQ", subscriptionId, filters]);
       ws.send(reqMessage);
     });
 
-    ws.addEventListener('message', event => {
+    ws.addEventListener("message", (event) => {
       try {
         // @ts-ignore - Cloudflare Workers WebSocket event has data property
         const message = JSON.parse(event.data) as NostrMessage;
@@ -445,50 +524,63 @@ function fetchEventFromFallbackRelay(pubkey: string): Promise<NostrEvent | null>
 
         // Handle EOSE message
         else if (message[0] === "EOSE") {
-          console.log("EOSE received from fallback relay, no kind 0 event found.");
+          console.log(
+            "EOSE received from fallback relay, no kind 0 event found.",
+          );
           closeWebSocket(message[1]);
           resolve(null);
         }
       } catch (error) {
-        console.error(`Error processing fallback relay event for pubkey ${pubkey}: ${error}`);
+        console.error(
+          `Error processing fallback relay event for pubkey ${pubkey}: ${error}`,
+        );
         reject(error);
       }
     });
 
-    ws.addEventListener('error', (error: Event) => {
+    ws.addEventListener("error", (error: Event) => {
       console.error(`WebSocket error with fallback relay:`, error);
       ws.close();
       hasClosed = true;
       reject(error);
     });
 
-    ws.addEventListener('close', () => {
+    ws.addEventListener("close", () => {
       hasClosed = true;
-      console.log('Fallback relay WebSocket connection closed.');
+      console.log("Fallback relay WebSocket connection closed.");
     });
 
     setTimeout(() => {
       if (!hasClosed) {
-        console.log('Timeout reached. Closing WebSocket connection to fallback relay.');
+        console.log(
+          "Timeout reached. Closing WebSocket connection to fallback relay.",
+        );
         closeWebSocket(null);
-        reject(new Error(`No response from fallback relay for pubkey ${pubkey}`));
+        reject(
+          new Error(`No response from fallback relay for pubkey ${pubkey}`),
+        );
       }
     }, 5000);
   });
 }
 
 // Fetch kind 0 event for pubkey
-async function fetchKind0EventForPubkey(pubkey: string, env: Env): Promise<NostrEvent | null> {
+async function fetchKind0EventForPubkey(
+  pubkey: string,
+  env: Env,
+): Promise<NostrEvent | null> {
   try {
     const filters = [{ kinds: [0], authors: [pubkey], limit: 1 }];
-    const result = await queryEvents(filters, 'first-unconstrained', env);
+    const result = await queryEvents(filters, "first-unconstrained", env);
 
     if (result.events && result.events.length > 0) {
       return result.events[0];
     }
 
     // If no event found from local database, use fallback relay
-    console.log(`No kind 0 event found locally, trying fallback relay: wss://relay.primal.net`);
+    console.log(
+      `No kind 0 event found locally, trying fallback relay: wss://relay.primal.net`,
+    );
     const fallbackEvent = await fetchEventFromFallbackRelay(pubkey);
     if (fallbackEvent) {
       return fallbackEvent;
@@ -501,7 +593,10 @@ async function fetchKind0EventForPubkey(pubkey: string, env: Env): Promise<Nostr
 }
 
 // NIP-05 validation
-async function validateNIP05FromKind0(pubkey: string, env: Env): Promise<boolean> {
+async function validateNIP05FromKind0(
+  pubkey: string,
+  env: Env,
+): Promise<boolean> {
   try {
     // Fetch kind 0 event for the pubkey
     const metadataEvent = await fetchKind0EventForPubkey(pubkey, env);
@@ -522,16 +617,18 @@ async function validateNIP05FromKind0(pubkey: string, env: Env): Promise<boolean
     // Validate the NIP-05 address
     const isValid = await validateNIP05(nip05Address, pubkey);
     return isValid;
-
   } catch (error) {
     console.error(`Error validating NIP-05 for pubkey ${pubkey}: ${error}`);
     return false;
   }
 }
 
-async function validateNIP05(nip05Address: string, pubkey: string): Promise<boolean> {
+async function validateNIP05(
+  nip05Address: string,
+  pubkey: string,
+): Promise<boolean> {
   try {
-    const [name, domain] = nip05Address.split('@');
+    const [name, domain] = nip05Address.split("@");
 
     if (!domain) {
       throw new Error(`Invalid NIP-05 address format: ${nip05Address}`);
@@ -553,20 +650,23 @@ async function validateNIP05(nip05Address: string, pubkey: string): Promise<bool
     const response = await fetch(url);
 
     if (!response.ok) {
-      console.error(`Failed to fetch NIP-05 data from ${url}: ${response.statusText}`);
+      console.error(
+        `Failed to fetch NIP-05 data from ${url}: ${response.statusText}`,
+      );
       return false;
     }
 
-    const nip05Data = await response.json() as Nip05Response;
+    const nip05Data = (await response.json()) as Nip05Response;
 
     if (!nip05Data.names || !nip05Data.names[name]) {
-      console.error(`NIP-05 data does not contain a matching public key for ${name}`);
+      console.error(
+        `NIP-05 data does not contain a matching public key for ${name}`,
+      );
       return false;
     }
 
     const nip05Pubkey = nip05Data.names[name];
     return nip05Pubkey === pubkey;
-
   } catch (error) {
     console.error(`Error validating NIP-05 address: ${error}`);
     return false;
@@ -584,7 +684,7 @@ function calculateQueryComplexity(filter: NostrFilter): number {
 
   // Tag filters are expensive
   for (const [key, values] of Object.entries(filter)) {
-    if (key.startsWith('#') && Array.isArray(values)) {
+    if (key.startsWith("#") && Array.isArray(values)) {
       complexity += values.length * 10;
     }
   }
@@ -603,13 +703,19 @@ function calculateQueryComplexity(filter: NostrFilter): number {
 }
 
 // Event processing
-async function processEvent(event: NostrEvent, sessionId: string, env: Env): Promise<{ success: boolean; message: string; bookmark?: string }> {
+async function processEvent(
+  event: NostrEvent,
+  sessionId: string,
+  env: Env,
+): Promise<{ success: boolean; message: string; bookmark?: string }> {
   try {
     // NIP-05 validation if enabled (bypassed for kind 1059)
     if (event.kind !== 1059 && checkValidNip05 && event.kind !== 0) {
       const isValidNIP05 = await validateNIP05FromKind0(event.pubkey, env);
       if (!isValidNIP05) {
-        console.error(`Event denied. NIP-05 validation failed for pubkey ${event.pubkey}.`);
+        console.error(
+          `Event denied. NIP-05 validation failed for pubkey ${event.pubkey}.`,
+        );
         return { success: false, message: "invalid: NIP-05 validation failed" };
       }
     }
@@ -626,7 +732,6 @@ async function processEvent(event: NostrEvent, sessionId: string, env: Env): Pro
 
     // Save event directly to database (duplicate check happens inside saveEventToDatabase)
     return await saveEventToDatabase(event, env);
-
   } catch (error: any) {
     console.error(`Error processing event: ${error.message}`);
     return { success: false, message: `error: ${error.message}` };
@@ -634,7 +739,10 @@ async function processEvent(event: NostrEvent, sessionId: string, env: Env): Pro
 }
 
 // Save event directly to D1 database
-async function saveEventToDatabase(event: NostrEvent, env: Env): Promise<{ success: boolean; message: string; bookmark?: string }> {
+async function saveEventToDatabase(
+  event: NostrEvent,
+  env: Env,
+): Promise<{ success: boolean; message: string; bookmark?: string }> {
   try {
     // Check worker cache for duplicate event ID
     const cache = caches.default;
@@ -644,60 +752,99 @@ async function saveEventToDatabase(event: NostrEvent, env: Env): Promise<{ succe
       return { success: false, message: "duplicate: event already exists" };
     }
 
-    const session = env.RELAY_DATABASE.withSession('first-primary');
+    const session = env.RELAY_DATABASE.withSession("first-primary");
 
     // Check D1 for duplicate event ID
-    const existingEvent = await session.prepare("SELECT id FROM events WHERE id = ? LIMIT 1").bind(event.id).first();
+    const existingEvent = await session
+      .prepare("SELECT id FROM events WHERE id = ? LIMIT 1")
+      .bind(event.id)
+      .first();
     if (existingEvent) {
-      return { success: false, message: "duplicate: event already exists", bookmark: session.getBookmark() ?? undefined };
+      return {
+        success: false,
+        message: "duplicate: event already exists",
+        bookmark: session.getBookmark() ?? undefined,
+      };
     }
 
     // NIP-16: Replaceable events (kinds 0, 3, 10000-19999)
     // Only the latest event (by created_at) for a given (kind, pubkey) should be stored
-    const isReplaceable = event.kind === 0 || event.kind === 3 || (event.kind >= 10000 && event.kind < 20000);
+    const isReplaceable =
+      event.kind === 0 ||
+      event.kind === 3 ||
+      (event.kind >= 10000 && event.kind < 20000);
     if (isReplaceable) {
-      const existing = await session.prepare(
-        "SELECT id, created_at FROM events WHERE kind = ? AND pubkey = ? LIMIT 1"
-      ).bind(event.kind, event.pubkey).first();
+      const existing = await session
+        .prepare(
+          "SELECT id, created_at FROM events WHERE kind = ? AND pubkey = ? LIMIT 1",
+        )
+        .bind(event.kind, event.pubkey)
+        .first();
 
       if (existing) {
         if (event.created_at <= (existing.created_at as number)) {
-          return { success: false, message: "duplicate: a newer or equal replaceable event already exists", bookmark: session.getBookmark() ?? undefined };
+          return {
+            success: false,
+            message:
+              "duplicate: a newer or equal replaceable event already exists",
+            bookmark: session.getBookmark() ?? undefined,
+          };
         }
         // Delete the older event and its associated data
         const oldId = existing.id as string;
         await session.batch([
           session.prepare("DELETE FROM tags WHERE event_id = ?").bind(oldId),
-          session.prepare("DELETE FROM content_hashes WHERE event_id = ?").bind(oldId),
-          session.prepare("DELETE FROM event_tags_cache_multi WHERE event_id = ?").bind(oldId),
+          session
+            .prepare("DELETE FROM content_hashes WHERE event_id = ?")
+            .bind(oldId),
+          session
+            .prepare("DELETE FROM event_tags_cache_multi WHERE event_id = ?")
+            .bind(oldId),
           session.prepare("DELETE FROM events WHERE id = ?").bind(oldId),
         ]);
-        console.log(`Replaced older event ${oldId} with newer event ${event.id} (kind ${event.kind})`);
+        console.log(
+          `Replaced older event ${oldId} with newer event ${event.id} (kind ${event.kind})`,
+        );
       }
     }
 
     // NIP-33: Parameterized replaceable events (kinds 30000-39999)
     // Only the latest event for a given (kind, pubkey, d-tag) should be stored
-    const isParameterizedReplaceable = event.kind >= 30000 && event.kind < 40000;
+    const isParameterizedReplaceable =
+      event.kind >= 30000 && event.kind < 40000;
     if (isParameterizedReplaceable) {
-      const dTag = event.tags.find(t => t[0] === 'd')?.[1] || '';
-      const existing = await session.prepare(
-        "SELECT id, created_at FROM events WHERE kind = ? AND pubkey = ? AND tag_d = ? LIMIT 1"
-      ).bind(event.kind, event.pubkey, dTag).first();
+      const dTag = event.tags.find((t) => t[0] === "d")?.[1] || "";
+      const existing = await session
+        .prepare(
+          "SELECT id, created_at FROM events WHERE kind = ? AND pubkey = ? AND tag_d = ? LIMIT 1",
+        )
+        .bind(event.kind, event.pubkey, dTag)
+        .first();
 
       if (existing) {
         if (event.created_at <= (existing.created_at as number)) {
-          return { success: false, message: "duplicate: a newer or equal parameterized replaceable event already exists", bookmark: session.getBookmark() ?? undefined };
+          return {
+            success: false,
+            message:
+              "duplicate: a newer or equal parameterized replaceable event already exists",
+            bookmark: session.getBookmark() ?? undefined,
+          };
         }
         // Delete the older event and its associated data
         const oldId = existing.id as string;
         await session.batch([
           session.prepare("DELETE FROM tags WHERE event_id = ?").bind(oldId),
-          session.prepare("DELETE FROM content_hashes WHERE event_id = ?").bind(oldId),
-          session.prepare("DELETE FROM event_tags_cache_multi WHERE event_id = ?").bind(oldId),
+          session
+            .prepare("DELETE FROM content_hashes WHERE event_id = ?")
+            .bind(oldId),
+          session
+            .prepare("DELETE FROM event_tags_cache_multi WHERE event_id = ?")
+            .bind(oldId),
           session.prepare("DELETE FROM events WHERE id = ?").bind(oldId),
         ]);
-        console.log(`Replaced older parameterized event ${oldId} with newer event ${event.id} (kind ${event.kind}, d=${dTag})`);
+        console.log(
+          `Replaced older parameterized event ${oldId} with newer event ${event.id} (kind ${event.kind}, d=${dTag})`,
+        );
       }
     }
 
@@ -708,11 +855,25 @@ async function saveEventToDatabase(event: NostrEvent, env: Env): Promise<{ succe
 
       // Check D1 for existing content hash
       const duplicateContent = enableGlobalDuplicateCheck
-        ? await session.prepare("SELECT event_id FROM content_hashes WHERE hash = ? LIMIT 1").bind(contentHash).first()
-        : await session.prepare("SELECT event_id FROM content_hashes WHERE hash = ? AND pubkey = ? LIMIT 1").bind(contentHash, event.pubkey).first();
+        ? await session
+            .prepare(
+              "SELECT event_id FROM content_hashes WHERE hash = ? LIMIT 1",
+            )
+            .bind(contentHash)
+            .first()
+        : await session
+            .prepare(
+              "SELECT event_id FROM content_hashes WHERE hash = ? AND pubkey = ? LIMIT 1",
+            )
+            .bind(contentHash, event.pubkey)
+            .first();
 
       if (duplicateContent) {
-        return { success: false, message: "duplicate: content already exists", bookmark: session.getBookmark() ?? undefined };
+        return {
+          success: false,
+          message: "duplicate: content already exists",
+          bookmark: session.getBookmark() ?? undefined,
+        };
       }
     }
 
@@ -732,59 +893,70 @@ async function saveEventToDatabase(event: NostrEvent, env: Env): Promise<{ succe
       if (tag[0]) {
         tagInserts.push({
           name: tag[0],
-          value: tag[1] || ''
+          value: tag[1] || "",
         });
 
         // Capture first occurrence of common tags
-        if (tag[0] === 'p' && !tagP) tagP = tag[1];
-        if (tag[0] === 'e' && !tagE) tagE = tag[1];
-        if (tag[0] === 'a' && !tagA) tagA = tag[1];
-        if (tag[0] === 't' && !tagT) tagT = tag[1];
-        if (tag[0] === 'd' && !tagD) tagD = tag[1];
-        if (tag[0] === 'r' && !tagR) tagR = tag[1];
-        if (tag[0] === 'L' && !tagL) tagL = tag[1];
-        if (tag[0] === 's' && !tagS) tagS = tag[1];
-        if (tag[0] === 'u' && !tagU) tagU = tag[1];
+        if (tag[0] === "p" && !tagP) tagP = tag[1];
+        if (tag[0] === "e" && !tagE) tagE = tag[1];
+        if (tag[0] === "a" && !tagA) tagA = tag[1];
+        if (tag[0] === "t" && !tagT) tagT = tag[1];
+        if (tag[0] === "d" && !tagD) tagD = tag[1];
+        if (tag[0] === "r" && !tagR) tagR = tag[1];
+        if (tag[0] === "L" && !tagL) tagL = tag[1];
+        if (tag[0] === "s" && !tagS) tagS = tag[1];
+        if (tag[0] === "u" && !tagU) tagU = tag[1];
       }
     }
 
     // Extract thread metadata
-    const eTags = tagInserts.filter(t => t.name === 'e').map(t => t.value);
+    const eTags = tagInserts.filter((t) => t.name === "e").map((t) => t.value);
     const replyToEventId = eTags.length > 0 ? eTags[0] : null;
     const rootEventId = eTags.length > 1 ? eTags[eTags.length - 1] : null;
     const contentPreview = event.content.substring(0, 100);
 
     // Insert the main event
-    const insertResult = await session.prepare(`
+    const insertResult = await session
+      .prepare(
+        `
       INSERT INTO events (id, pubkey, created_at, kind, tags, content, sig, tag_p, tag_e, tag_a, tag_t, tag_d, tag_r, tag_L, tag_s, tag_u, reply_to_event_id, root_event_id, content_preview)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO NOTHING
-    `).bind(
-      event.id,
-      event.pubkey,
-      event.created_at,
-      event.kind,
-      JSON.stringify(event.tags),
-      event.content,
-      event.sig,
-      tagP,
-      tagE,
-      tagA,
-      tagT,
-      tagD,
-      tagR,
-      tagL,
-      tagS,
-      tagU,
-      replyToEventId,
-      rootEventId,
-      contentPreview
-    ).run();
+    `,
+      )
+      .bind(
+        event.id,
+        event.pubkey,
+        event.created_at,
+        event.kind,
+        JSON.stringify(event.tags),
+        event.content,
+        event.sig,
+        tagP,
+        tagE,
+        tagA,
+        tagT,
+        tagD,
+        tagR,
+        tagL,
+        tagS,
+        tagU,
+        replyToEventId,
+        rootEventId,
+        contentPreview,
+      )
+      .run();
 
     // Check if the event was actually inserted (not a duplicate that slipped through)
     if (insertResult.meta.changes === 0) {
-      console.log(`Event ${event.id} already exists in database (race condition duplicate)`);
-      return { success: false, message: "duplicate: event already exists", bookmark: session.getBookmark() ?? undefined };
+      console.log(
+        `Event ${event.id} already exists in database (race condition duplicate)`,
+      );
+      return {
+        success: false,
+        message: "duplicate: event already exists",
+        bookmark: session.getBookmark() ?? undefined,
+      };
     }
 
     // Consolidate all post-insert writes (tags, caches, content hash) into a single batch
@@ -794,29 +966,50 @@ async function saveEventToDatabase(event: NostrEvent, env: Env): Promise<{ succe
     // Tag inserts
     for (const t of tagInserts) {
       postInsertBatch.push(
-        session.prepare('INSERT INTO tags (event_id, tag_name, tag_value) VALUES (?, ?, ?)').bind(event.id, t.name, t.value)
+        session
+          .prepare(
+            "INSERT INTO tags (event_id, tag_name, tag_value) VALUES (?, ?, ?)",
+          )
+          .bind(event.id, t.name, t.value),
       );
     }
 
     // Multi-value tag cache for p/e/a/t/d/r/L/s/u tags
-    const cacheableTags = tagInserts.filter(t => ['p', 'e', 'a', 't', 'd', 'r', 'L', 's', 'u'].includes(t.name));
+    const cacheableTags = tagInserts.filter((t) =>
+      ["p", "e", "a", "t", "d", "r", "L", "s", "u"].includes(t.name),
+    );
     for (const t of cacheableTags) {
       postInsertBatch.push(
-        session.prepare(`
+        session
+          .prepare(
+            `
           INSERT OR IGNORE INTO event_tags_cache_multi (event_id, pubkey, kind, created_at, tag_type, tag_value)
           VALUES (?, ?, ?, ?, ?, ?)
-        `).bind(event.id, event.pubkey, event.kind, event.created_at, t.name, t.value)
+        `,
+          )
+          .bind(
+            event.id,
+            event.pubkey,
+            event.kind,
+            event.created_at,
+            t.name,
+            t.value,
+          ),
       );
     }
 
     // Content hash
     if (contentHash) {
       postInsertBatch.push(
-        session.prepare(`
+        session
+          .prepare(
+            `
           INSERT INTO content_hashes (hash, event_id, pubkey, created_at)
           VALUES (?, ?, ?, ?)
           ON CONFLICT(hash) DO NOTHING
-        `).bind(contentHash, event.id, event.pubkey, event.created_at)
+        `,
+          )
+          .bind(contentHash, event.id, event.pubkey, event.created_at),
       );
     }
 
@@ -826,31 +1019,48 @@ async function saveEventToDatabase(event: NostrEvent, env: Env): Promise<{ succe
     }
 
     // Cache the event ID in worker cache to prevent duplicates
-    await cache.put(cacheKey, new Response('cached', {
-      headers: {
-        'Cache-Control': 'max-age=3600'
-      }
-    }));
+    await cache.put(
+      cacheKey,
+      new Response("cached", {
+        headers: {
+          "Cache-Control": "max-age=3600",
+        },
+      }),
+    );
 
     console.log(`Event ${event.id} saved directly to database`);
-    return { success: true, message: "Event saved successfully", bookmark: session.getBookmark() ?? undefined };
-
+    return {
+      success: true,
+      message: "Event saved successfully",
+      bookmark: session.getBookmark() ?? undefined,
+    };
   } catch (error: any) {
     console.error(`Error saving event to database: ${error.message}`);
-    console.error(`Event details: ID=${event.id}, Kind=${event.kind}, Tags count=${event.tags.length}`);
+    console.error(
+      `Event details: ID=${event.id}, Kind=${event.kind}, Tags count=${event.tags.length}`,
+    );
     return { success: false, message: `error: ${error.message}` };
   }
 }
 
 // Helper function for kind 5
-async function processDeletionEvent(event: NostrEvent, env: Env): Promise<{ success: boolean; message: string; bookmark?: string }> {
+async function processDeletionEvent(
+  event: NostrEvent,
+  env: Env,
+): Promise<{ success: boolean; message: string; bookmark?: string }> {
   console.log(`Processing deletion event ${event.id}`);
-  const deletedEventIds = event.tags.filter(tag => tag[0] === "e").map(tag => tag[1]);
+  const deletedEventIds = event.tags
+    .filter((tag) => tag[0] === "e")
+    .map((tag) => tag[1]);
 
-  const session = env.RELAY_DATABASE.withSession('first-primary');
+  const session = env.RELAY_DATABASE.withSession("first-primary");
 
   if (deletedEventIds.length === 0) {
-    return { success: true, message: "No events to delete", bookmark: session.getBookmark() ?? undefined };
+    return {
+      success: true,
+      message: "No events to delete",
+      bookmark: session.getBookmark() ?? undefined,
+    };
   }
 
   let deletedCount = 0;
@@ -860,10 +1070,13 @@ async function processDeletionEvent(event: NostrEvent, env: Env): Promise<{ succ
   // Verify ownership for all events in a single query
   if (deletedEventIds.length > 0) {
     try {
-      const ownerPlaceholders = deletedEventIds.map(() => '?').join(',');
-      const ownerResult = await session.prepare(
-        `SELECT id, pubkey FROM events WHERE id IN (${ownerPlaceholders})`
-      ).bind(...deletedEventIds).all();
+      const ownerPlaceholders = deletedEventIds.map(() => "?").join(",");
+      const ownerResult = await session
+        .prepare(
+          `SELECT id, pubkey FROM events WHERE id IN (${ownerPlaceholders})`,
+        )
+        .bind(...deletedEventIds)
+        .all();
 
       const eventOwners = new Map<string, string>();
       for (const row of ownerResult.results) {
@@ -873,19 +1086,25 @@ async function processDeletionEvent(event: NostrEvent, env: Env): Promise<{ succ
       for (const eventId of deletedEventIds) {
         const ownerPubkey = eventOwners.get(eventId);
         if (!ownerPubkey) {
-          console.warn(`Event ${eventId} not found in D1. Nothing to delete (may be in queue).`);
+          console.warn(
+            `Event ${eventId} not found in D1. Nothing to delete (may be in queue).`,
+          );
           continue;
         }
         if (ownerPubkey !== event.pubkey) {
-          console.warn(`Event ${eventId} does not belong to pubkey ${event.pubkey}. Skipping deletion.`);
-          errors.push(`unauthorized: cannot delete event ${eventId} - wrong pubkey`);
+          console.warn(
+            `Event ${eventId} does not belong to pubkey ${event.pubkey}. Skipping deletion.`,
+          );
+          errors.push(
+            `unauthorized: cannot delete event ${eventId} - wrong pubkey`,
+          );
           continue;
         }
         idsToDelete.push(eventId);
       }
     } catch (error) {
-      console.error('Error checking event ownership:', error);
-      errors.push('error checking event ownership');
+      console.error("Error checking event ownership:", error);
+      errors.push("error checking event ownership");
     }
   }
 
@@ -896,8 +1115,12 @@ async function processDeletionEvent(event: NostrEvent, env: Env): Promise<{ succ
       for (const eventId of idsToDelete) {
         deleteStatements.push(
           session.prepare("DELETE FROM tags WHERE event_id = ?").bind(eventId),
-          session.prepare("DELETE FROM content_hashes WHERE event_id = ?").bind(eventId),
-          session.prepare("DELETE FROM event_tags_cache_multi WHERE event_id = ?").bind(eventId),
+          session
+            .prepare("DELETE FROM content_hashes WHERE event_id = ?")
+            .bind(eventId),
+          session
+            .prepare("DELETE FROM event_tags_cache_multi WHERE event_id = ?")
+            .bind(eventId),
           session.prepare("DELETE FROM events WHERE id = ?").bind(eventId),
         );
       }
@@ -910,8 +1133,8 @@ async function processDeletionEvent(event: NostrEvent, env: Env): Promise<{ succ
       deletedCount = idsToDelete.length;
       console.log(`Batch deleted ${deletedCount} events from D1.`);
     } catch (error) {
-      console.error('Error batch deleting events:', error);
-      errors.push('error batch deleting events');
+      console.error("Error batch deleting events:", error);
+      errors.push("error batch deleting events");
     }
   }
 
@@ -919,13 +1142,20 @@ async function processDeletionEvent(event: NostrEvent, env: Env): Promise<{ succ
   const saveResult = await saveEventToDatabase(event, env);
 
   if (errors.length > 0) {
-    return { success: false, message: errors[0], bookmark: saveResult.bookmark ?? (session.getBookmark() ?? undefined) };
+    return {
+      success: false,
+      message: errors[0],
+      bookmark: saveResult.bookmark ?? session.getBookmark() ?? undefined,
+    };
   }
 
   return {
     success: true,
-    message: deletedCount > 0 ? `Successfully deleted ${deletedCount} event(s)` : "No matching events found to delete",
-    bookmark: saveResult.bookmark ?? (session.getBookmark() ?? undefined)
+    message:
+      deletedCount > 0
+        ? `Successfully deleted ${deletedCount} event(s)`
+        : "No matching events found to delete",
+    bookmark: saveResult.bookmark ?? session.getBookmark() ?? undefined,
   };
 }
 
@@ -939,8 +1169,9 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
 }
 
 // Only the 7 columns consumed by NostrEvent
-const EVENT_COLS = 'e.id, e.pubkey, e.created_at, e.kind, e.tags, e.content, e.sig';
-const EVENT_COLS_BARE = 'id, pubkey, created_at, kind, tags, content, sig';
+const EVENT_COLS =
+  "e.id, e.pubkey, e.created_at, e.kind, e.tags, e.content, e.sig";
+const EVENT_COLS_BARE = "id, pubkey, created_at, kind, tags, content, sig";
 
 // Build COUNT query for precheck
 function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
@@ -952,9 +1183,9 @@ function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
   const otherTags: Array<{ name: string; values: string[] }> = [];
 
   for (const [key, values] of Object.entries(filter)) {
-    if (key.startsWith('#') && Array.isArray(values) && values.length > 0) {
+    if (key.startsWith("#") && Array.isArray(values) && values.length > 0) {
       const tagName = key.substring(1);
-      if (['p', 'e', 'a', 't', 'd', 'r', 'L', 's', 'u'].includes(tagName)) {
+      if (["p", "e", "a", "t", "d", "r", "L", "s", "u"].includes(tagName)) {
         directTags.push({ name: tagName, values });
       } else {
         otherTags.push({ name: tagName, values });
@@ -968,19 +1199,20 @@ function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
     if (directTags.length === 1) {
       const tagFilter = directTags[0];
       const hasKinds = filter.kinds && filter.kinds.length > 0;
-      const indexHint = hasKinds && filter.kinds!.length <= 10
-        ? " INDEXED BY idx_cache_multi_kind_type_value"
-        : " INDEXED BY idx_cache_multi_type_value_time";
+      const indexHint =
+        hasKinds && filter.kinds!.length <= 10
+          ? " INDEXED BY idx_cache_multi_kind_type_value"
+          : " INDEXED BY idx_cache_multi_type_value_time";
       let sql = `SELECT COUNT(DISTINCT m.event_id) as count FROM event_tags_cache_multi m${indexHint}
-        WHERE m.tag_type = ? AND m.tag_value IN (${tagFilter.values.map(() => '?').join(',')})`;
+        WHERE m.tag_type = ? AND m.tag_value IN (${tagFilter.values.map(() => "?").join(",")})`;
       params.push(tagFilter.name, ...tagFilter.values);
 
       if (filter.authors && filter.authors.length > 0) {
-        sql += ` AND m.pubkey IN (${filter.authors.map(() => '?').join(',')})`;
+        sql += ` AND m.pubkey IN (${filter.authors.map(() => "?").join(",")})`;
         params.push(...filter.authors);
       }
       if (hasKinds) {
-        sql += ` AND m.kind IN (${filter.kinds!.map(() => '?').join(',')})`;
+        sql += ` AND m.kind IN (${filter.kinds!.map(() => "?").join(",")})`;
         params.push(...filter.kinds!);
       }
       if (filter.since) {
@@ -995,18 +1227,22 @@ function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
     } else {
       const hasKindsMulti = filter.kinds && filter.kinds.length > 0;
       const firstTag = directTags[0];
-      const firstHint = hasKindsMulti && filter.kinds!.length <= 10
-        ? " INDEXED BY idx_cache_multi_kind_type_value"
-        : " INDEXED BY idx_cache_multi_type_value_time";
-      const additionalJoins = directTags.slice(1).map((t, i) => {
-        const alias = `m${i + 1}`;
-        const placeholders = t.values.map(() => '?').join(',');
-        return `INNER JOIN event_tags_cache_multi ${alias} ON m0.event_id = ${alias}.event_id AND ${alias}.tag_type = ? AND ${alias}.tag_value IN (${placeholders})`;
-      }).join('\n        ');
+      const firstHint =
+        hasKindsMulti && filter.kinds!.length <= 10
+          ? " INDEXED BY idx_cache_multi_kind_type_value"
+          : " INDEXED BY idx_cache_multi_type_value_time";
+      const additionalJoins = directTags
+        .slice(1)
+        .map((t, i) => {
+          const alias = `m${i + 1}`;
+          const placeholders = t.values.map(() => "?").join(",");
+          return `INNER JOIN event_tags_cache_multi ${alias} ON m0.event_id = ${alias}.event_id AND ${alias}.tag_type = ? AND ${alias}.tag_value IN (${placeholders})`;
+        })
+        .join("\n        ");
 
       let sql = `SELECT COUNT(DISTINCT m0.event_id) as count FROM event_tags_cache_multi m0${firstHint}
         ${additionalJoins}
-        WHERE m0.tag_type = ? AND m0.tag_value IN (${firstTag.values.map(() => '?').join(',')})`;
+        WHERE m0.tag_type = ? AND m0.tag_value IN (${firstTag.values.map(() => "?").join(",")})`;
 
       // First tag params, then additional tag params
       params.push(firstTag.name, ...firstTag.values);
@@ -1015,11 +1251,11 @@ function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
       }
 
       if (filter.authors && filter.authors.length > 0) {
-        sql += ` AND m0.pubkey IN (${filter.authors.map(() => '?').join(',')})`;
+        sql += ` AND m0.pubkey IN (${filter.authors.map(() => "?").join(",")})`;
         params.push(...filter.authors);
       }
       if (hasKindsMulti) {
-        sql += ` AND m0.kind IN (${filter.kinds!.map(() => '?').join(',')})`;
+        sql += ` AND m0.kind IN (${filter.kinds!.map(() => "?").join(",")})`;
         params.push(...filter.kinds!);
       }
       if (filter.since) {
@@ -1042,15 +1278,15 @@ function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
       const tagFilter = allTags[0];
       let sql = `SELECT COUNT(DISTINCT e.id) as count FROM events e
         INNER JOIN tags t ON e.id = t.event_id
-        WHERE t.tag_name = ? AND t.tag_value IN (${tagFilter.values.map(() => '?').join(',')})`;
+        WHERE t.tag_name = ? AND t.tag_value IN (${tagFilter.values.map(() => "?").join(",")})`;
       params.push(tagFilter.name, ...tagFilter.values);
 
       if (filter.authors && filter.authors.length > 0) {
-        sql += ` AND e.pubkey IN (${filter.authors.map(() => '?').join(',')})`;
+        sql += ` AND e.pubkey IN (${filter.authors.map(() => "?").join(",")})`;
         params.push(...filter.authors);
       }
       if (filter.kinds && filter.kinds.length > 0) {
-        sql += ` AND e.kind IN (${filter.kinds.map(() => '?').join(',')})`;
+        sql += ` AND e.kind IN (${filter.kinds.map(() => "?").join(",")})`;
         params.push(...filter.kinds);
       }
       if (filter.since) {
@@ -1064,10 +1300,12 @@ function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
       return { sql, params };
     } else {
       // Multiple tags
-      const tagConditions = allTags.map(t => {
-        const placeholders = t.values.map(() => '?').join(',');
-        return `(t.tag_name = ? AND t.tag_value IN (${placeholders}))`;
-      }).join(' OR ');
+      const tagConditions = allTags
+        .map((t) => {
+          const placeholders = t.values.map(() => "?").join(",");
+          return `(t.tag_name = ? AND t.tag_value IN (${placeholders}))`;
+        })
+        .join(" OR ");
 
       for (const tagFilter of allTags) {
         params.push(tagFilter.name, ...tagFilter.values);
@@ -1078,11 +1316,11 @@ function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
         WHERE ${tagConditions}`;
 
       if (filter.authors && filter.authors.length > 0) {
-        sql += ` AND e.pubkey IN (${filter.authors.map(() => '?').join(',')})`;
+        sql += ` AND e.pubkey IN (${filter.authors.map(() => "?").join(",")})`;
         params.push(...filter.authors);
       }
       if (filter.kinds && filter.kinds.length > 0) {
-        sql += ` AND e.kind IN (${filter.kinds.map(() => '?').join(',')})`;
+        sql += ` AND e.kind IN (${filter.kinds.map(() => "?").join(",")})`;
         params.push(...filter.kinds);
       }
       if (filter.since) {
@@ -1107,15 +1345,15 @@ function buildCountQuery(filter: NostrFilter): { sql: string; params: any[] } {
   let sql = "SELECT COUNT(*) as count FROM events";
 
   if (filter.ids && filter.ids.length > 0) {
-    conditions.push(`id IN (${filter.ids.map(() => '?').join(',')})`);
+    conditions.push(`id IN (${filter.ids.map(() => "?").join(",")})`);
     params.push(...filter.ids);
   }
   if (filter.authors && filter.authors.length > 0) {
-    conditions.push(`pubkey IN (${filter.authors.map(() => '?').join(',')})`);
+    conditions.push(`pubkey IN (${filter.authors.map(() => "?").join(",")})`);
     params.push(...filter.authors);
   }
   if (filter.kinds && filter.kinds.length > 0) {
-    conditions.push(`kind IN (${filter.kinds.map(() => '?').join(',')})`);
+    conditions.push(`kind IN (${filter.kinds.map(() => "?").join(",")})`);
     params.push(...filter.kinds);
   }
   if (filter.since) {
@@ -1145,12 +1383,12 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
   const otherTags: Array<{ name: string; values: string[] }> = [];
 
   for (const [key, values] of Object.entries(filter)) {
-    if (key.startsWith('#') && Array.isArray(values) && values.length > 0) {
+    if (key.startsWith("#") && Array.isArray(values) && values.length > 0) {
       tagCount += values.length;
       const tagName = key.substring(1);
 
       // Check if this tag has a direct column in events table (p, e, a, t, d, r, L, s, u)
-      if (['p', 'e', 'a', 't', 'd', 'r', 'L', 's', 'u'].includes(tagName)) {
+      if (["p", "e", "a", "t", "d", "r", "L", "s", "u"].includes(tagName)) {
         directTags.push({ name: tagName, values });
       } else {
         otherTags.push({ name: tagName, values });
@@ -1176,20 +1414,23 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
 
       sql = `SELECT DISTINCT ${EVENT_COLS} FROM events e
         INNER JOIN event_tags_cache_multi m${indexHint} ON e.id = m.event_id
-        WHERE m.tag_type = ? AND m.tag_value IN (${tagFilter.values.map(() => '?').join(',')})`;
+        WHERE m.tag_type = ? AND m.tag_value IN (${tagFilter.values.map(() => "?").join(",")})`;
       params.push(tagFilter.name, ...tagFilter.values);
     } else {
       const hasKindsMulti = filter.kinds && filter.kinds.length > 0;
-      const tagConditions = directTags.map((t, i) => {
-        const alias = `m${i}`;
-        const placeholders = t.values.map(() => '?').join(',');
-        const hint = i === 0
-          ? (hasKindsMulti && filter.kinds!.length <= 10
-            ? " INDEXED BY idx_cache_multi_kind_type_value"
-            : " INDEXED BY idx_cache_multi_type_value_time")
-          : "";
-        return `INNER JOIN event_tags_cache_multi ${alias}${hint} ON e.id = ${alias}.event_id AND ${alias}.tag_type = ? AND ${alias}.tag_value IN (${placeholders})`;
-      }).join('\n        ');
+      const tagConditions = directTags
+        .map((t, i) => {
+          const alias = `m${i}`;
+          const placeholders = t.values.map(() => "?").join(",");
+          const hint =
+            i === 0
+              ? hasKindsMulti && filter.kinds!.length <= 10
+                ? " INDEXED BY idx_cache_multi_kind_type_value"
+                : " INDEXED BY idx_cache_multi_type_value_time"
+              : "";
+          return `INNER JOIN event_tags_cache_multi ${alias}${hint} ON e.id = ${alias}.event_id AND ${alias}.tag_type = ? AND ${alias}.tag_value IN (${placeholders})`;
+        })
+        .join("\n        ");
 
       sql = `SELECT DISTINCT ${EVENT_COLS} FROM events e
         ${tagConditions}
@@ -1201,17 +1442,21 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
     }
 
     if (filter.ids && filter.ids.length > 0) {
-      whereConditions.push(`e.id IN (${filter.ids.map(() => '?').join(',')})`);
+      whereConditions.push(`e.id IN (${filter.ids.map(() => "?").join(",")})`);
       params.push(...filter.ids);
     }
 
     if (filter.authors && filter.authors.length > 0) {
-      whereConditions.push(`e.pubkey IN (${filter.authors.map(() => '?').join(',')})`);
+      whereConditions.push(
+        `e.pubkey IN (${filter.authors.map(() => "?").join(",")})`,
+      );
       params.push(...filter.authors);
     }
 
     if (filter.kinds && filter.kinds.length > 0) {
-      whereConditions.push(`${cacheAlias}.kind IN (${filter.kinds.map(() => '?').join(',')})`);
+      whereConditions.push(
+        `${cacheAlias}.kind IN (${filter.kinds.map(() => "?").join(",")})`,
+      );
       params.push(...filter.kinds);
     }
 
@@ -1226,8 +1471,10 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
     }
 
     if (filter.cursor) {
-      const [timestamp, lastId] = filter.cursor.split(':');
-      whereConditions.push(`(${cacheAlias}.created_at < ? OR (${cacheAlias}.created_at = ? AND e.id > ?))`);
+      const [timestamp, lastId] = filter.cursor.split(":");
+      whereConditions.push(
+        `(${cacheAlias}.created_at < ? OR (${cacheAlias}.created_at = ? AND e.id > ?))`,
+      );
       params.push(parseInt(timestamp), parseInt(timestamp), lastId);
     }
 
@@ -1250,24 +1497,30 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
       const tagFilter = allTags[0];
       let sql = `SELECT ${EVENT_COLS} FROM events e
         INNER JOIN tags t ON e.id = t.event_id
-        WHERE t.tag_name = ? AND t.tag_value IN (${tagFilter.values.map(() => '?').join(',')})`;
+        WHERE t.tag_name = ? AND t.tag_value IN (${tagFilter.values.map(() => "?").join(",")})`;
 
       params.push(tagFilter.name, ...tagFilter.values);
 
       const whereConditions: string[] = [];
 
       if (filter.ids && filter.ids.length > 0) {
-        whereConditions.push(`e.id IN (${filter.ids.map(() => '?').join(',')})`);
+        whereConditions.push(
+          `e.id IN (${filter.ids.map(() => "?").join(",")})`,
+        );
         params.push(...filter.ids);
       }
 
       if (filter.authors && filter.authors.length > 0) {
-        whereConditions.push(`e.pubkey IN (${filter.authors.map(() => '?').join(',')})`);
+        whereConditions.push(
+          `e.pubkey IN (${filter.authors.map(() => "?").join(",")})`,
+        );
         params.push(...filter.authors);
       }
 
       if (filter.kinds && filter.kinds.length > 0) {
-        whereConditions.push(`e.kind IN (${filter.kinds.map(() => '?').join(',')})`);
+        whereConditions.push(
+          `e.kind IN (${filter.kinds.map(() => "?").join(",")})`,
+        );
         params.push(...filter.kinds);
       }
 
@@ -1283,8 +1536,10 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
 
       // Cursor-based pagination support
       if (filter.cursor) {
-        const [timestamp, lastId] = filter.cursor.split(':');
-        whereConditions.push("(e.created_at < ? OR (e.created_at = ? AND e.id > ?))");
+        const [timestamp, lastId] = filter.cursor.split(":");
+        whereConditions.push(
+          "(e.created_at < ? OR (e.created_at = ? AND e.id > ?))",
+        );
         params.push(parseInt(timestamp), parseInt(timestamp), lastId);
       }
 
@@ -1300,10 +1555,12 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
     }
 
     // Multiple tags
-    const tagConditions = allTags.map(t => {
-      const placeholders = t.values.map(() => '?').join(',');
-      return `(t.tag_name = ? AND t.tag_value IN (${placeholders}))`;
-    }).join(' OR ');
+    const tagConditions = allTags
+      .map((t) => {
+        const placeholders = t.values.map(() => "?").join(",");
+        return `(t.tag_name = ? AND t.tag_value IN (${placeholders}))`;
+      })
+      .join(" OR ");
 
     // Add all parameters
     for (const tagFilter of allTags) {
@@ -1317,17 +1574,21 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
     const whereConditions: string[] = [];
 
     if (filter.ids && filter.ids.length > 0) {
-      whereConditions.push(`e.id IN (${filter.ids.map(() => '?').join(',')})`);
+      whereConditions.push(`e.id IN (${filter.ids.map(() => "?").join(",")})`);
       params.push(...filter.ids);
     }
 
     if (filter.authors && filter.authors.length > 0) {
-      whereConditions.push(`e.pubkey IN (${filter.authors.map(() => '?').join(',')})`);
+      whereConditions.push(
+        `e.pubkey IN (${filter.authors.map(() => "?").join(",")})`,
+      );
       params.push(...filter.authors);
     }
 
     if (filter.kinds && filter.kinds.length > 0) {
-      whereConditions.push(`e.kind IN (${filter.kinds.map(() => '?').join(',')})`);
+      whereConditions.push(
+        `e.kind IN (${filter.kinds.map(() => "?").join(",")})`,
+      );
       params.push(...filter.kinds);
     }
 
@@ -1343,8 +1604,10 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
 
     // Cursor-based pagination support
     if (filter.cursor) {
-      const [timestamp, lastId] = filter.cursor.split(':');
-      whereConditions.push("(e.created_at < ? OR (e.created_at = ? AND e.id > ?))");
+      const [timestamp, lastId] = filter.cursor.split(":");
+      whereConditions.push(
+        "(e.created_at < ? OR (e.created_at = ? AND e.id > ?))",
+      );
       params.push(parseInt(timestamp), parseInt(timestamp), lastId);
     }
 
@@ -1352,7 +1615,8 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
       sql += " AND " + whereConditions.join(" AND ");
     }
 
-    sql += " GROUP BY e.id, e.pubkey, e.created_at, e.kind, e.tags, e.content, e.sig";
+    sql +=
+      " GROUP BY e.id, e.pubkey, e.created_at, e.kind, e.tags, e.content, e.sig";
     sql += ` HAVING COUNT(DISTINCT t.tag_name) = ?`;
     params.push(allTags.length);
 
@@ -1392,17 +1656,17 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
   let sql = `SELECT ${EVENT_COLS_BARE} FROM events${indexHint}`;
 
   if (filter.ids && filter.ids.length > 0) {
-    conditions.push(`id IN (${filter.ids.map(() => '?').join(',')})`);
+    conditions.push(`id IN (${filter.ids.map(() => "?").join(",")})`);
     params.push(...filter.ids);
   }
 
   if (filter.authors && filter.authors.length > 0) {
-    conditions.push(`pubkey IN (${filter.authors.map(() => '?').join(',')})`);
+    conditions.push(`pubkey IN (${filter.authors.map(() => "?").join(",")})`);
     params.push(...filter.authors);
   }
 
   if (filter.kinds && filter.kinds.length > 0) {
-    conditions.push(`kind IN (${filter.kinds.map(() => '?').join(',')})`);
+    conditions.push(`kind IN (${filter.kinds.map(() => "?").join(",")})`);
     params.push(...filter.kinds);
   }
 
@@ -1418,7 +1682,7 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
 
   // Cursor-based pagination support
   if (filter.cursor) {
-    const [timestamp, lastId] = filter.cursor.split(':');
+    const [timestamp, lastId] = filter.cursor.split(":");
     conditions.push("(created_at < ? OR (created_at = ? AND id > ?))");
     params.push(parseInt(timestamp), parseInt(timestamp), lastId);
   }
@@ -1435,7 +1699,11 @@ function buildQuery(filter: NostrFilter): { sql: string; params: any[] } {
 }
 
 // Helper function to handle chunked queries
-async function queryDatabaseChunked(filter: NostrFilter, bookmark: string, env: Env): Promise<{ events: NostrEvent[] }> {
+async function queryDatabaseChunked(
+  filter: NostrFilter,
+  bookmark: string,
+  env: Env,
+): Promise<{ events: NostrEvent[] }> {
   const session = env.RELAY_DATABASE.withSession(bookmark);
   const allRows = new Map<string, any>(); // Collect rows first, dedupe by ID
 
@@ -1445,7 +1713,7 @@ async function queryDatabaseChunked(filter: NostrFilter, bookmark: string, env: 
     ids: false,
     authors: false,
     kinds: false,
-    tags: {} as Record<string, boolean>
+    tags: {} as Record<string, boolean>,
   };
 
   // Identify what needs chunking and remove from base filter
@@ -1466,31 +1734,39 @@ async function queryDatabaseChunked(filter: NostrFilter, bookmark: string, env: 
 
   // Check tag filters
   for (const [key, values] of Object.entries(filter)) {
-    if (key.startsWith('#') && Array.isArray(values) && values.length > CHUNK_SIZE) {
+    if (
+      key.startsWith("#") &&
+      Array.isArray(values) &&
+      values.length > CHUNK_SIZE
+    ) {
       needsChunking.tags[key] = true;
       delete baseFilter[key];
     }
   }
 
   // Helper function to process string array chunks
-  const processStringChunks = async (filterType: 'ids' | 'authors' | string, values: string[]) => {
+  const processStringChunks = async (
+    filterType: "ids" | "authors" | string,
+    values: string[],
+  ) => {
     const chunks = chunkArray(values, CHUNK_SIZE);
 
     for (const chunk of chunks) {
       const chunkFilter = { ...baseFilter };
 
-      if (filterType === 'ids') {
+      if (filterType === "ids") {
         chunkFilter.ids = chunk;
-      } else if (filterType === 'authors') {
+      } else if (filterType === "authors") {
         chunkFilter.authors = chunk;
-      } else if (filterType.startsWith('#')) {
+      } else if (filterType.startsWith("#")) {
         chunkFilter[filterType] = chunk;
       }
 
       const query = buildQuery(chunkFilter);
 
       try {
-        const result = await session.prepare(query.sql)
+        const result = await session
+          .prepare(query.sql)
           .bind(...query.params)
           .all();
 
@@ -1504,7 +1780,7 @@ async function queryDatabaseChunked(filter: NostrFilter, bookmark: string, env: 
   };
 
   // Helper function to process number array chunks
-  const processNumberChunks = async (filterType: 'kinds', values: number[]) => {
+  const processNumberChunks = async (filterType: "kinds", values: number[]) => {
     const chunks = chunkArray(values, CHUNK_SIZE);
 
     for (const chunk of chunks) {
@@ -1514,7 +1790,8 @@ async function queryDatabaseChunked(filter: NostrFilter, bookmark: string, env: 
       const query = buildQuery(chunkFilter);
 
       try {
-        const result = await session.prepare(query.sql)
+        const result = await session
+          .prepare(query.sql)
           .bind(...query.params)
           .all();
 
@@ -1529,31 +1806,40 @@ async function queryDatabaseChunked(filter: NostrFilter, bookmark: string, env: 
 
   // Process each filter type that needs chunking
   if (needsChunking.ids && filter.ids) {
-    await processStringChunks('ids', filter.ids);
+    await processStringChunks("ids", filter.ids);
   }
 
   if (needsChunking.authors && filter.authors) {
-    await processStringChunks('authors', filter.authors);
+    await processStringChunks("authors", filter.authors);
   }
 
   if (needsChunking.kinds && filter.kinds) {
-    await processNumberChunks('kinds', filter.kinds);
+    await processNumberChunks("kinds", filter.kinds);
   }
 
   // Process tag filters
   for (const [tagKey, _] of Object.entries(needsChunking.tags)) {
     const tagValues = filter[tagKey];
-    if (Array.isArray(tagValues) && tagValues.every((v: any) => typeof v === 'string')) {
+    if (
+      Array.isArray(tagValues) &&
+      tagValues.every((v: any) => typeof v === "string")
+    ) {
       await processStringChunks(tagKey, tagValues as string[]);
     }
   }
 
   // If nothing needed chunking, just run the query as-is
-  if (!needsChunking.ids && !needsChunking.authors && !needsChunking.kinds && Object.keys(needsChunking.tags).length === 0) {
+  if (
+    !needsChunking.ids &&
+    !needsChunking.authors &&
+    !needsChunking.kinds &&
+    Object.keys(needsChunking.tags).length === 0
+  ) {
     const query = buildQuery(filter);
 
     try {
-      const result = await session.prepare(query.sql)
+      const result = await session
+        .prepare(query.sql)
         .bind(...query.params)
         .all();
 
@@ -1566,14 +1852,14 @@ async function queryDatabaseChunked(filter: NostrFilter, bookmark: string, env: 
   }
 
   // Build events from collected rows
-  const events = Array.from(allRows.values()).map(row => ({
+  const events = Array.from(allRows.values()).map((row) => ({
     id: row.id as string,
     pubkey: row.pubkey as string,
     created_at: row.created_at as number,
     kind: row.kind as number,
     tags: JSON.parse(row.tags as string),
     content: row.content as string,
-    sig: row.sig as string
+    sig: row.sig as string,
   }));
   console.log(`Found ${events.length} events (chunked)`);
 
@@ -1581,9 +1867,15 @@ async function queryDatabaseChunked(filter: NostrFilter, bookmark: string, env: 
 }
 
 // Query handling
-async function queryEvents(filters: NostrFilter[], bookmark: string, env: Env): Promise<QueryResult> {
+async function queryEvents(
+  filters: NostrFilter[],
+  bookmark: string,
+  env: Env,
+): Promise<QueryResult> {
   try {
-    console.log(`Processing query with ${filters.length} filters and bookmark: ${bookmark}`);
+    console.log(
+      `Processing query with ${filters.length} filters and bookmark: ${bookmark}`,
+    );
     const session = env.RELAY_DATABASE.withSession(bookmark);
     const eventSet = new Map<string, NostrEvent>();
 
@@ -1595,19 +1887,23 @@ async function queryEvents(filters: NostrFilter[], bookmark: string, env: Env): 
       // Check query complexity
       const complexity = calculateQueryComplexity(filter);
       if (complexity > MAX_QUERY_COMPLEXITY) {
-        console.warn(`Query too complex (complexity: ${complexity}), skipping filter`);
+        console.warn(
+          `Query too complex (complexity: ${complexity}), skipping filter`,
+        );
         continue;
       }
 
       // Check if any array in the filter exceeds chunk size
-      const needsChunking = (
+      const needsChunking =
         (filter.ids && filter.ids.length > CHUNK_SIZE) ||
         (filter.authors && filter.authors.length > CHUNK_SIZE) ||
         (filter.kinds && filter.kinds.length > CHUNK_SIZE) ||
-        Object.entries(filter).some(([key, values]) =>
-          key.startsWith('#') && Array.isArray(values) && values.length > CHUNK_SIZE
-        )
-      );
+        Object.entries(filter).some(
+          ([key, values]) =>
+            key.startsWith("#") &&
+            Array.isArray(values) &&
+            values.length > CHUNK_SIZE,
+        );
 
       if (needsChunking) {
         chunkedFilters.push(filter);
@@ -1620,11 +1916,15 @@ async function queryEvents(filters: NostrFilter[], bookmark: string, env: Env): 
     let totalEventsRead = 0;
     for (const filter of chunkedFilters) {
       if (totalEventsRead >= GLOBAL_MAX_EVENTS) {
-        console.warn(`Global event limit reached (${GLOBAL_MAX_EVENTS}), stopping query`);
+        console.warn(
+          `Global event limit reached (${GLOBAL_MAX_EVENTS}), stopping query`,
+        );
         break;
       }
 
-      console.log(`Filter has arrays >${CHUNK_SIZE} items, using chunked query...`);
+      console.log(
+        `Filter has arrays >${CHUNK_SIZE} items, using chunked query...`,
+      );
       const chunkedResult = await queryDatabaseChunked(filter, bookmark, env);
       for (const event of chunkedResult.events) {
         if (totalEventsRead >= GLOBAL_MAX_EVENTS) break;
@@ -1639,18 +1939,27 @@ async function queryEvents(filters: NostrFilter[], bookmark: string, env: Env): 
       const validFilters: NostrFilter[] = [];
       for (const filter of batchableFilters) {
         // Only precheck if filter has tag filters
-        const hasTagFilters = Object.keys(filter).some(key => key.startsWith('#'));
+        const hasTagFilters = Object.keys(filter).some((key) =>
+          key.startsWith("#"),
+        );
 
         if (hasTagFilters) {
           const countQuery = buildCountQuery(filter);
-          const countResult = await session.prepare(countQuery.sql).bind(...countQuery.params).first() as { count: number } | null;
+          const countResult = (await session
+            .prepare(countQuery.sql)
+            .bind(...countQuery.params)
+            .first()) as { count: number } | null;
           const estimatedRows = (countResult?.count as number) || 0;
 
           if (estimatedRows > 10000) {
-            console.warn(`Query precheck: estimated ${estimatedRows} rows, skipping filter to prevent timeout`);
+            console.warn(
+              `Query precheck: estimated ${estimatedRows} rows, skipping filter to prevent timeout`,
+            );
             continue;
           } else {
-            console.log(`Query precheck: estimated ${estimatedRows} rows, proceeding`);
+            console.log(
+              `Query precheck: estimated ${estimatedRows} rows, proceeding`,
+            );
           }
         }
 
@@ -1658,9 +1967,9 @@ async function queryEvents(filters: NostrFilter[], bookmark: string, env: Env): 
       }
 
       if (validFilters.length === 0) {
-        console.warn('All filters were too expensive after COUNT precheck');
+        console.warn("All filters were too expensive after COUNT precheck");
       } else {
-        const queries = validFilters.map(filter => {
+        const queries = validFilters.map((filter) => {
           const query = buildQuery(filter);
           return session.prepare(query.sql).bind(...query.params);
         });
@@ -1680,7 +1989,7 @@ async function queryEvents(filters: NostrFilter[], bookmark: string, env: Env): 
               console.log({
                 servedByRegion: result.meta.served_by_region ?? "",
                 servedByPrimary: result.meta.served_by_primary ?? false,
-                batchSize: results.length
+                batchSize: results.length,
               });
             }
 
@@ -1704,7 +2013,7 @@ async function queryEvents(filters: NostrFilter[], bookmark: string, env: Env): 
               kind: row.kind as number,
               tags: JSON.parse(row.tags as string),
               content: row.content as string,
-              sig: row.sig as string
+              sig: row.sig as string,
             };
             eventSet.set(event.id, event);
           }
@@ -1725,7 +2034,6 @@ async function queryEvents(filters: NostrFilter[], bookmark: string, env: Env): 
     const newBookmark = session.getBookmark();
     console.log(`Found ${events.length} events. New bookmark: ${newBookmark}`);
     return { events, bookmark: newBookmark };
-
   } catch (error: any) {
     console.error(`Error querying events: ${error.message}`);
     return { events: [], bookmark: null };
@@ -1739,7 +2047,7 @@ function handleRelayInfoRequest(request: Request): Response {
     const url = new URL(request.url);
     responseInfo.payments_url = `${url.protocol}//${url.host}`;
     responseInfo.fees = {
-      admission: [{ amount: RELAY_ACCESS_PRICE_SATS * 1000, unit: "msats" }]
+      admission: [{ amount: RELAY_ACCESS_PRICE_SATS * 1000, unit: "msats" }],
     };
   }
 
@@ -1750,12 +2058,13 @@ function handleRelayInfoRequest(request: Request): Response {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "Content-Type, Accept",
       "Access-Control-Allow-Methods": "GET",
-    }
+    },
   });
 }
 
 function serveLandingPage(): Response {
-  const payToRelaySection = PAY_TO_RELAY_ENABLED ? `
+  const payToRelaySection = PAY_TO_RELAY_ENABLED
+    ? `
     <div class="pay-section" id="paySection">
       <p style="margin-bottom: 1rem;">Pay to access this relay:</p>
       <button id="payButton" class="pay-button" data-npub="${relayNpub}" data-relays="wss://relay.damus.io,wss://relay.primal.net,wss://sendit.nosflare.com" data-sats-amount="${RELAY_ACCESS_PRICE_SATS}">
@@ -1770,7 +2079,8 @@ function serveLandingPage(): Response {
       </div>
       <p class="copy-hint">Click to copy</p>
     </div>
-  ` : `
+  `
+    : `
     <div class="info-box">
       <p style="margin-bottom: 1rem;">Connect your Nostr client to:</p>
       <div class="url-display" onclick="copyToClipboard()" id="relay-url">
@@ -1781,326 +2091,266 @@ function serveLandingPage(): Response {
   `;
 
   const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A serverless Nostr relay through Cloudflare Worker and D1 database" />
-    <title>Nosflare - Nostr Relay</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Nostr Relay Event Viewer</title>
+
+        <style>
+          * {
             box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #0a0a0a;
-            color: #ffffff;
-            min-height: 100vh;
+          }
+
+          body {
+            margin: 0;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: Arial, sans-serif;
+          }
+
+          h1 {
+            margin-top: 0;
+            font-size: 28px;
+          }
+
+          .status {
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #1e293b;
+            font-size: 14px;
+          }
+
+          .connected {
+            color: #22c55e;
+          }
+
+          .error {
+            color: #ef4444;
+          }
+
+          .events {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(255, 69, 0, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 50%, rgba(255, 140, 0, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 50% 100%, rgba(255, 0, 0, 0.05) 0%, transparent 50%);
-            animation: pulse 10s ease-in-out infinite;
-            z-index: -1;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-        
-        .container {
-            text-align: center;
-            padding: 2rem;
-            max-width: 600px;
-            z-index: 1;
-        }
-        
-        .logo {
-            width: 400px;
-            height: auto;
-            filter: drop-shadow(0 0 30px rgba(255, 69, 0, 0.5));
-        }
-        
-        .tagline {
-            font-size: 1.2rem;
-            color: #999;
-            margin-bottom: 3rem;
-        }
-        
-        .info-box, .pay-section {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 16px;
+          }
+
+          .event {
+            background: #111827;
+            border: 1px solid #334155;
             border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(10px);
-        }
-        
-        .pay-button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            margin: 1rem 0;
-            transition: transform 0.3s ease;
-        }
-        
-        .pay-button:hover {
-            transform: scale(1.05);
-        }
-        
-        .price-info {
-            font-size: 1.2rem;
-            color: #ff8c00;
-            font-weight: 600;
-        }
-        
-        .url-display {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 69, 0, 0.3);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
-            color: #ff8c00;
-            margin: 1rem 0;
-            word-break: break-all;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .url-display:hover {
-            border-color: #ff4500;
-            background: rgba(255, 69, 0, 0.1);
-        }
-        
-        .copy-hint {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 0.5rem;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .stat-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 1rem;
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #ff4500;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #999;
-            margin-top: 0.25rem;
-        }
-        
-        .links {
-            margin-top: 3rem;
+            padding: 16px;
+            overflow: hidden;
+          }
+
+          .meta {
             display: flex;
-            gap: 2rem;
-            justify-content: center;
             flex-wrap: wrap;
-        }
-        
-        .link {
-            color: #ff8c00;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s ease;
-        }
-        
-        .link:hover {
-            color: #ff4500;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            background: #ff4500;
-            color: white;
-            padding: 1rem 2rem;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+          }
+
+          .label {
+            color: #cbd5e1;
+            font-weight: 600;
+          }
+
+          .content {
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.5;
+            margin-bottom: 12px;
+          }
+
+          .json {
+            margin-top: 12px;
+            background: #020617;
+            padding: 12px;
             border-radius: 8px;
-            transform: translateY(100px);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .toast.show {
-            transform: translateY(0);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <img src="https://nosflare.com/images/nosflare.png" alt="Nosflare Logo" class="logo">
-        <p class="tagline">A serverless Nostr relay powered by Cloudflare</p>
-        
-        ${payToRelaySection}
-        
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value">${relayInfo.supported_nips.length}</div>
-                <div class="stat-label">Supported NIPs</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${relayInfo.version}</div>
-                <div class="stat-label">Version</div>
-            </div>
+            overflow-x: auto;
+            font-size: 12px;
+            color: #93c5fd;
+          }
+
+          button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 14px;
+          }
+
+          button:hover {
+            background: #1d4ed8;
+          }
+
+          .small {
+            font-size: 11px;
+            opacity: 0.8;
+          }
+        </style>
+      </head>
+      <body>
+
+        <h1>Latest 7 Nostr Events</h1>
+
+        <button id="reloadBtn">Reload Events</button>
+
+        <div class="status" id="status">
+          Connecting to relay...
         </div>
-        
-        <div class="links">
-            <a href="https://github.com/Spl0itable/nosflare" class="link" target="_blank">GitHub</a>
-            <a href="https://nostr.com" class="link" target="_blank">Learn about Nostr</a>
-        </div>
-    </div>
-    
-    <div class="toast" id="toast">Copied to clipboard!</div>
-    
-    <script>
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const relayUrl = protocol + '//' + window.location.host;
-        const relayUrlElement = document.getElementById('relay-url');
-        if (relayUrlElement) {
-            relayUrlElement.textContent = relayUrl;
-        }
-        
-        function copyToClipboard() {
-            const relayUrl = document.getElementById('relay-url').textContent;
-            navigator.clipboard.writeText(relayUrl).then(() => {
-                const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 2000);
+
+        <div class="events" id="events"></div>
+
+        <script>
+          const RELAY_URL = "wss://nosflare.ashby-shoal-com.workers.dev";
+          const LIMIT = 7;
+
+          const statusEl = document.getElementById("status");
+          const eventsEl = document.getElementById("events");
+          const reloadBtn = document.getElementById("reloadBtn");
+
+          let socket;
+          let receivedEvents = [];
+
+          function setStatus(message, className) {
+            className = className || "";
+            statusEl.className = "status " + className;
+            statusEl.textContent = message;
+          }
+
+          function truncate(str, len) {
+            len = len || 24;
+            if (!str) return "";
+            return str.length > len ? str.slice(0, len) + "..." : str;
+          }
+
+          function formatDate(ts) {
+            return new Date(ts * 1000).toLocaleString();
+          }
+
+          function escapeHtml(str) {
+            return str
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
+          }
+
+          function renderEvent(event) {
+            const div = document.createElement("div");
+            div.className = "event";
+
+            const content = event.content && event.content.trim().length ? event.content : "(no content)";
+
+            div.innerHTML =
+              '<div class="meta">' +
+                '<div><span class="label">Kind:</span> ' + event.kind + '</div>' +
+                '<div><span class="label">Created:</span> ' + formatDate(event.created_at) + '</div>' +
+                '<div><span class="label">Pubkey:</span> ' + truncate(event.pubkey, 32) + '</div>' +
+                '<div><span class="label">ID:</span> ' + truncate(event.id, 32) + '</div>' +
+              '</div>' +
+              '<div class="content">' + escapeHtml(content) + '</div>' +
+              '<details>' +
+                '<summary class="small">View Raw JSON</summary>' +
+                '<pre class="json">' + escapeHtml(JSON.stringify(event, null, 2)) + '</pre>' +
+              '</details>';
+
+            return div;
+          }
+
+          function renderEvents() {
+            // Sort by created_at descending (newest first)
+            receivedEvents.sort((a, b) => b.created_at - a.created_at);
+
+            eventsEl.innerHTML = "";
+
+            receivedEvents.forEach(event => {
+              eventsEl.appendChild(renderEvent(event));
             });
-        }
-        
-        ${PAY_TO_RELAY_ENABLED ? `
-        // Payment handling code
-        let paymentCheckInterval;
+          }
 
-        async function checkPaymentStatus() {
-            if (!window.nostr || !window.nostr.getPublicKey) return false;
-            
-            try {
-                const pubkey = await window.nostr.getPublicKey();
-                const response = await fetch('/api/check-payment?pubkey=' + pubkey);
-                const data = await response.json();
-                
-                if (data.paid) {
-                    showRelayAccess();
-                    return true;
+          function connect() {
+            if (socket) {
+              socket.close();
+            }
+
+            receivedEvents = [];
+            eventsEl.innerHTML = "";
+            setStatus("Connecting to relay...");
+
+            socket = new WebSocket(RELAY_URL);
+
+            socket.onopen = function() {
+              setStatus("Connected to " + RELAY_URL, "connected");
+
+              const subId = "latest-events-" + Date.now();
+
+              const req = [
+                "REQ",
+                subId,
+                {
+                  limit: LIMIT
                 }
-                return false;
-            } catch (error) {
-                console.error('Error checking payment status:', error);
-                return false;
-            }
-        }
+              ];
 
-        function showRelayAccess() {
-            const paySection = document.getElementById('paySection');
-            const accessSection = document.getElementById('accessSection');
-            
-            if (paySection && accessSection) {
-                paySection.style.transition = 'opacity 0.3s ease-out';
-                paySection.style.opacity = '0';
-                
-                setTimeout(() => {
-                    paySection.style.display = 'none';
-                    accessSection.style.display = 'block';
-                    accessSection.style.opacity = '0';
-                    accessSection.style.transition = 'opacity 0.3s ease-in';
-                    
-                    void accessSection.offsetHeight;
-                    
-                    accessSection.style.opacity = '1';
-                }, 300);
-            }
-            
-            if (paymentCheckInterval) {
-                clearInterval(paymentCheckInterval);
-                paymentCheckInterval = null;
-            }
-        }
-
-        window.addEventListener('payment-success', async (event) => {
-            console.log('Payment success event received');
-            setTimeout(() => {
-                showRelayAccess();
-            }, 500);
-        });
-
-        async function initPayment() {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/gh/Spl0itable/nosflare@main/nostr-zap.js';
-            script.onload = () => {
-                if (window.nostrZap) {
-                    window.nostrZap.initTargets('#payButton');
-                    
-                    document.getElementById('payButton').addEventListener('click', () => {
-                        if (!paymentCheckInterval) {
-                            paymentCheckInterval = setInterval(async () => {
-                                await checkPaymentStatus();
-                            }, 3000);
-                        }
-                    });
-                }
+              socket.send(JSON.stringify(req));
             };
-            document.head.appendChild(script);
-            
-            await checkPaymentStatus();
-        }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initPayment);
-        } else {
-            initPayment();
-        }
-        ` : ''}
-    </script>
-    ${PAY_TO_RELAY_ENABLED ? '<script src="https://unpkg.com/nostr-login@latest/dist/unpkg.js" data-perms="sign_event:1" data-methods="connect,extension,local" data-dark-mode="true"></script>' : ''}
-</body>
-</html>
-  `;
+            socket.onmessage = function(msg) {
+              try {
+                const data = JSON.parse(msg.data);
+
+                if (data[0] === "EVENT") {
+                  const event = data[2];
+                  receivedEvents.push(event);
+                }
+
+                if (data[0] === "EOSE") {
+                  renderEvents();
+                  setStatus("Loaded " + receivedEvents.length + " events (sorted newest first)", "connected");
+                }
+
+                if (data[0] === "NOTICE") {
+                  console.log("NOTICE:", data[1]);
+                }
+
+              } catch (err) {
+                console.error("Failed to parse message", err);
+              }
+            };
+
+            socket.onerror = function(err) {
+              console.error(err);
+              setStatus("WebSocket error", "error");
+            };
+
+            socket.onclose = function() {
+              setStatus("Disconnected from relay", "error");
+            };
+          }
+
+          reloadBtn.addEventListener("click", connect);
+
+          connect();
+        </script>
+
+      </body>
+    </html>
+    `;
 
   return new Response(html, {
     status: 200,
     headers: {
-      'Content-Type': 'text/html;charset=UTF-8',
-      'Cache-Control': 'public, max-age=3600'
-    }
+      "Content-Type": "text/html;charset=UTF-8",
+      "Cache-Control": "public, max-age=3600",
+    },
   });
 }
 
@@ -2122,7 +2372,7 @@ function handleNIP05Request(url: URL): Response {
   if (!name) {
     return new Response(JSON.stringify({ error: "Missing 'name' parameter" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
   }
 
@@ -2130,236 +2380,458 @@ function handleNIP05Request(url: URL): Response {
   if (!pubkey) {
     return new Response(JSON.stringify({ error: "User not found" }), {
       status: 404,
-      headers: { "Content-Type": "application/json" }
+      headers: { "Content-Type": "application/json" },
     });
   }
 
   const response = {
     names: { [name]: pubkey },
-    relays: { [pubkey]: [] }
+    relays: { [pubkey]: [] },
   };
 
   return new Response(JSON.stringify(response), {
     status: 200,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*"
-    }
+      "Access-Control-Allow-Origin": "*",
+    },
   });
 }
 
-async function handleCheckPayment(request: Request, env: Env): Promise<Response> {
+async function handleCheckPayment(
+  request: Request,
+  env: Env,
+): Promise<Response> {
   const url = new URL(request.url);
-  const pubkey = url.searchParams.get('pubkey');
+  const pubkey = url.searchParams.get("pubkey");
 
   if (!pubkey) {
-    return new Response(JSON.stringify({ error: 'Missing pubkey' }), {
+    return new Response(JSON.stringify({ error: "Missing pubkey" }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" },
     });
   }
 
   const paid = await hasPaidForRelay(pubkey, env);
 
   if (paid === null) {
-    return new Response(JSON.stringify({ error: 'Unable to verify payment status' }), {
-      status: 503,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
-    });
+    return new Response(
+      JSON.stringify({ error: "Unable to verify payment status" }),
+      {
+        status: 503,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      },
+    );
   }
 
   return new Response(JSON.stringify({ paid }), {
     status: 200,
     headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    }
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
   });
 }
 
-async function handlePaymentNotification(request: Request, env: Env): Promise<Response> {
-  if (request.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+async function handlePaymentNotification(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
   try {
     const url = new URL(request.url);
-    const pubkey = url.searchParams.get('npub');
+    const pubkey = url.searchParams.get("npub");
 
     if (!pubkey) {
-      return new Response(JSON.stringify({ error: 'Missing pubkey' }), {
+      return new Response(JSON.stringify({ error: "Missing pubkey" }), {
         status: 400,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
       });
     }
 
     const success = await savePaidPubkey(pubkey, env);
 
-    return new Response(JSON.stringify({
-      success,
-      message: success ? 'Payment recorded successfully' : 'Failed to save payment'
-    }), {
-      status: success ? 200 : 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
-    });
+    return new Response(
+      JSON.stringify({
+        success,
+        message: success
+          ? "Payment recorded successfully"
+          : "Failed to save payment",
+      }),
+      {
+        status: success ? 200 : 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      },
+    );
   } catch (error) {
-    console.error('Error processing payment notification:', error);
-    return new Response(JSON.stringify({ error: 'Invalid request' }), {
+    console.error("Error processing payment notification:", error);
+    return new Response(JSON.stringify({ error: "Invalid request" }), {
       status: 400,
       headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      }
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   }
 }
 
 // Multi-region DO selection logic with location hints
-async function getOptimalDO(cf: any, env: Env, url: URL): Promise<{ stub: DurableObjectStub; doName: string }> {
-  const continent = cf?.continent || 'NA';
-  const country = cf?.country || 'US';
-  const region = cf?.region || 'unknown';
-  const colo = cf?.colo || 'unknown';
+async function getOptimalDO(
+  cf: any,
+  env: Env,
+  url: URL,
+): Promise<{ stub: DurableObjectStub; doName: string }> {
+  const continent = cf?.continent || "NA";
+  const country = cf?.country || "US";
+  const region = cf?.region || "unknown";
+  const colo = cf?.colo || "unknown";
 
-  console.log(`User location: continent=${continent}, country=${country}, region=${region}, colo=${colo}`);
+  console.log(
+    `User location: continent=${continent}, country=${country}, region=${region}, colo=${colo}`,
+  );
 
   // All 9 endpoints with their location hints
   const ALL_ENDPOINTS = [
-    { name: 'relay-WNAM-primary', hint: 'wnam' },
-    { name: 'relay-ENAM-primary', hint: 'enam' },
-    { name: 'relay-WEUR-primary', hint: 'weur' },
-    { name: 'relay-EEUR-primary', hint: 'eeur' },
-    { name: 'relay-APAC-primary', hint: 'apac' },
-    { name: 'relay-OC-primary', hint: 'oc' },
-    { name: 'relay-SAM-primary', hint: 'sam' },
-    { name: 'relay-AFR-primary', hint: 'afr' },
-    { name: 'relay-ME-primary', hint: 'me' }
+    { name: "relay-WNAM-primary", hint: "wnam" },
+    { name: "relay-ENAM-primary", hint: "enam" },
+    { name: "relay-WEUR-primary", hint: "weur" },
+    { name: "relay-EEUR-primary", hint: "eeur" },
+    { name: "relay-APAC-primary", hint: "apac" },
+    { name: "relay-OC-primary", hint: "oc" },
+    { name: "relay-SAM-primary", hint: "sam" },
+    { name: "relay-AFR-primary", hint: "afr" },
+    { name: "relay-ME-primary", hint: "me" },
   ];
 
   // Country to hint mapping
   const countryToHint: Record<string, string> = {
     // North America
-    'US': 'enam', 'CA': 'enam', 'MX': 'wnam',
+    US: "enam",
+    CA: "enam",
+    MX: "wnam",
 
     // Central America & Caribbean (route to WNAM)
-    'GT': 'wnam', 'BZ': 'wnam', 'SV': 'wnam', 'HN': 'wnam', 'NI': 'wnam',
-    'CR': 'wnam', 'PA': 'wnam', 'CU': 'wnam', 'DO': 'wnam', 'HT': 'wnam',
-    'JM': 'wnam', 'PR': 'wnam', 'TT': 'wnam', 'BB': 'wnam',
+    GT: "wnam",
+    BZ: "wnam",
+    SV: "wnam",
+    HN: "wnam",
+    NI: "wnam",
+    CR: "wnam",
+    PA: "wnam",
+    CU: "wnam",
+    DO: "wnam",
+    HT: "wnam",
+    JM: "wnam",
+    PR: "wnam",
+    TT: "wnam",
+    BB: "wnam",
 
     // South America
-    'BR': 'sam', 'AR': 'sam', 'CL': 'sam', 'CO': 'sam', 'PE': 'sam',
-    'VE': 'sam', 'EC': 'sam', 'BO': 'sam', 'PY': 'sam', 'UY': 'sam',
-    'GY': 'sam', 'SR': 'sam', 'GF': 'sam',
+    BR: "sam",
+    AR: "sam",
+    CL: "sam",
+    CO: "sam",
+    PE: "sam",
+    VE: "sam",
+    EC: "sam",
+    BO: "sam",
+    PY: "sam",
+    UY: "sam",
+    GY: "sam",
+    SR: "sam",
+    GF: "sam",
 
     // Western Europe
-    'GB': 'weur', 'FR': 'weur', 'DE': 'weur', 'ES': 'weur', 'IT': 'weur',
-    'NL': 'weur', 'BE': 'weur', 'CH': 'weur', 'AT': 'weur', 'PT': 'weur',
-    'IE': 'weur', 'LU': 'weur', 'MC': 'weur', 'AD': 'weur', 'SM': 'weur',
-    'VA': 'weur', 'LI': 'weur', 'MT': 'weur',
+    GB: "weur",
+    FR: "weur",
+    DE: "weur",
+    ES: "weur",
+    IT: "weur",
+    NL: "weur",
+    BE: "weur",
+    CH: "weur",
+    AT: "weur",
+    PT: "weur",
+    IE: "weur",
+    LU: "weur",
+    MC: "weur",
+    AD: "weur",
+    SM: "weur",
+    VA: "weur",
+    LI: "weur",
+    MT: "weur",
 
     // Nordic countries (route to WEUR)
-    'SE': 'weur', 'NO': 'weur', 'DK': 'weur', 'FI': 'weur', 'IS': 'weur',
+    SE: "weur",
+    NO: "weur",
+    DK: "weur",
+    FI: "weur",
+    IS: "weur",
 
     // Eastern Europe
-    'PL': 'eeur', 'RU': 'eeur', 'UA': 'eeur', 'RO': 'eeur', 'CZ': 'eeur',
-    'HU': 'eeur', 'GR': 'eeur', 'BG': 'eeur', 'SK': 'eeur', 'HR': 'eeur',
-    'RS': 'eeur', 'SI': 'eeur', 'BA': 'eeur', 'AL': 'eeur', 'MK': 'eeur',
-    'ME': 'eeur', 'XK': 'eeur', 'BY': 'eeur', 'MD': 'eeur', 'LT': 'eeur',
-    'LV': 'eeur', 'EE': 'eeur', 'CY': 'eeur',
+    PL: "eeur",
+    RU: "eeur",
+    UA: "eeur",
+    RO: "eeur",
+    CZ: "eeur",
+    HU: "eeur",
+    GR: "eeur",
+    BG: "eeur",
+    SK: "eeur",
+    HR: "eeur",
+    RS: "eeur",
+    SI: "eeur",
+    BA: "eeur",
+    AL: "eeur",
+    MK: "eeur",
+    ME: "eeur",
+    XK: "eeur",
+    BY: "eeur",
+    MD: "eeur",
+    LT: "eeur",
+    LV: "eeur",
+    EE: "eeur",
+    CY: "eeur",
 
     // Asia-Pacific
-    'JP': 'apac', 'CN': 'apac', 'KR': 'apac', 'IN': 'apac', 'SG': 'apac',
-    'TH': 'apac', 'ID': 'apac', 'MY': 'apac', 'VN': 'apac', 'PH': 'apac',
-    'TW': 'apac', 'HK': 'apac', 'MO': 'apac', 'KH': 'apac', 'LA': 'apac',
-    'MM': 'apac', 'BD': 'apac', 'LK': 'apac', 'NP': 'apac', 'BT': 'apac',
-    'MV': 'apac', 'PK': 'apac', 'AF': 'apac', 'MN': 'apac', 'KP': 'apac',
-    'BN': 'apac', 'TL': 'apac', 'PG': 'apac', 'FJ': 'apac', 'SB': 'apac',
-    'VU': 'apac', 'NC': 'apac', 'PF': 'apac', 'WS': 'apac', 'TO': 'apac',
-    'KI': 'apac', 'PW': 'apac', 'MH': 'apac', 'FM': 'apac', 'NR': 'apac',
-    'TV': 'apac', 'CK': 'apac', 'NU': 'apac', 'TK': 'apac', 'GU': 'apac',
-    'MP': 'apac', 'AS': 'apac',
+    JP: "apac",
+    CN: "apac",
+    KR: "apac",
+    IN: "apac",
+    SG: "apac",
+    TH: "apac",
+    ID: "apac",
+    MY: "apac",
+    VN: "apac",
+    PH: "apac",
+    TW: "apac",
+    HK: "apac",
+    MO: "apac",
+    KH: "apac",
+    LA: "apac",
+    MM: "apac",
+    BD: "apac",
+    LK: "apac",
+    NP: "apac",
+    BT: "apac",
+    MV: "apac",
+    PK: "apac",
+    AF: "apac",
+    MN: "apac",
+    KP: "apac",
+    BN: "apac",
+    TL: "apac",
+    PG: "apac",
+    FJ: "apac",
+    SB: "apac",
+    VU: "apac",
+    NC: "apac",
+    PF: "apac",
+    WS: "apac",
+    TO: "apac",
+    KI: "apac",
+    PW: "apac",
+    MH: "apac",
+    FM: "apac",
+    NR: "apac",
+    TV: "apac",
+    CK: "apac",
+    NU: "apac",
+    TK: "apac",
+    GU: "apac",
+    MP: "apac",
+    AS: "apac",
 
     // Oceania
-    'AU': 'oc', 'NZ': 'oc',
+    AU: "oc",
+    NZ: "oc",
 
     // Middle East
-    'AE': 'me', 'SA': 'me', 'IL': 'me', 'TR': 'me', 'EG': 'me',
-    'IQ': 'me', 'IR': 'me', 'SY': 'me', 'JO': 'me', 'LB': 'me',
-    'KW': 'me', 'QA': 'me', 'BH': 'me', 'OM': 'me', 'YE': 'me',
-    'PS': 'me', 'GE': 'me', 'AM': 'me', 'AZ': 'me',
+    AE: "me",
+    SA: "me",
+    IL: "me",
+    TR: "me",
+    EG: "me",
+    IQ: "me",
+    IR: "me",
+    SY: "me",
+    JO: "me",
+    LB: "me",
+    KW: "me",
+    QA: "me",
+    BH: "me",
+    OM: "me",
+    YE: "me",
+    PS: "me",
+    GE: "me",
+    AM: "me",
+    AZ: "me",
 
     // Africa
-    'ZA': 'afr', 'NG': 'afr', 'KE': 'afr', 'MA': 'afr', 'TN': 'afr',
-    'DZ': 'afr', 'LY': 'afr', 'ET': 'afr', 'GH': 'afr', 'TZ': 'afr',
-    'UG': 'afr', 'SD': 'afr', 'AO': 'afr', 'MZ': 'afr', 'MG': 'afr',
-    'CM': 'afr', 'CI': 'afr', 'NE': 'afr', 'BF': 'afr', 'ML': 'afr',
-    'MW': 'afr', 'ZM': 'afr', 'SN': 'afr', 'SO': 'afr', 'TD': 'afr',
-    'ZW': 'afr', 'GN': 'afr', 'RW': 'afr', 'BJ': 'afr', 'BI': 'afr',
-    'TG': 'afr', 'SL': 'afr', 'LR': 'afr', 'MR': 'afr', 'CF': 'afr',
-    'ER': 'afr', 'GM': 'afr', 'BW': 'afr', 'NA': 'afr', 'GA': 'afr',
-    'LS': 'afr', 'GW': 'afr', 'GQ': 'afr', 'MU': 'afr', 'SZ': 'afr',
-    'DJ': 'afr', 'KM': 'afr', 'CV': 'afr', 'SC': 'afr', 'ST': 'afr',
-    'SS': 'afr', 'EH': 'afr', 'CG': 'afr', 'CD': 'afr',
+    ZA: "afr",
+    NG: "afr",
+    KE: "afr",
+    MA: "afr",
+    TN: "afr",
+    DZ: "afr",
+    LY: "afr",
+    ET: "afr",
+    GH: "afr",
+    TZ: "afr",
+    UG: "afr",
+    SD: "afr",
+    AO: "afr",
+    MZ: "afr",
+    MG: "afr",
+    CM: "afr",
+    CI: "afr",
+    NE: "afr",
+    BF: "afr",
+    ML: "afr",
+    MW: "afr",
+    ZM: "afr",
+    SN: "afr",
+    SO: "afr",
+    TD: "afr",
+    ZW: "afr",
+    GN: "afr",
+    RW: "afr",
+    BJ: "afr",
+    BI: "afr",
+    TG: "afr",
+    SL: "afr",
+    LR: "afr",
+    MR: "afr",
+    CF: "afr",
+    ER: "afr",
+    GM: "afr",
+    BW: "afr",
+    NA: "afr",
+    GA: "afr",
+    LS: "afr",
+    GW: "afr",
+    GQ: "afr",
+    MU: "afr",
+    SZ: "afr",
+    DJ: "afr",
+    KM: "afr",
+    CV: "afr",
+    SC: "afr",
+    ST: "afr",
+    SS: "afr",
+    EH: "afr",
+    CG: "afr",
+    CD: "afr",
 
     // Central Asia (route to APAC)
-    'KZ': 'apac', 'UZ': 'apac', 'TM': 'apac', 'TJ': 'apac', 'KG': 'apac',
+    KZ: "apac",
+    UZ: "apac",
+    TM: "apac",
+    TJ: "apac",
+    KG: "apac",
   };
 
   // US state-level routing
   const usStateToHint: Record<string, string> = {
     // Western states -> WNAM
-    'California': 'wnam', 'Oregon': 'wnam', 'Washington': 'wnam', 'Nevada': 'wnam', 'Arizona': 'wnam',
-    'Utah': 'wnam', 'Idaho': 'wnam', 'Montana': 'wnam', 'Wyoming': 'wnam', 'Colorado': 'wnam',
-    'New Mexico': 'wnam', 'Alaska': 'wnam', 'Hawaii': 'wnam',
+    California: "wnam",
+    Oregon: "wnam",
+    Washington: "wnam",
+    Nevada: "wnam",
+    Arizona: "wnam",
+    Utah: "wnam",
+    Idaho: "wnam",
+    Montana: "wnam",
+    Wyoming: "wnam",
+    Colorado: "wnam",
+    "New Mexico": "wnam",
+    Alaska: "wnam",
+    Hawaii: "wnam",
 
     // Eastern states -> ENAM
-    'New York': 'enam', 'Florida': 'enam', 'Texas': 'enam', 'Illinois': 'enam', 'Georgia': 'enam',
-    'Pennsylvania': 'enam', 'Ohio': 'enam', 'Michigan': 'enam', 'North Carolina': 'enam', 'Virginia': 'enam',
-    'Massachusetts': 'enam', 'New Jersey': 'enam', 'Maryland': 'enam', 'Connecticut': 'enam', 'Maine': 'enam',
-    'New Hampshire': 'enam', 'Vermont': 'enam', 'Rhode Island': 'enam', 'South Carolina': 'enam', 'Tennessee': 'enam',
-    'Alabama': 'enam', 'Mississippi': 'enam', 'Louisiana': 'enam', 'Arkansas': 'enam', 'Missouri': 'enam',
-    'Iowa': 'enam', 'Minnesota': 'enam', 'Wisconsin': 'enam', 'Indiana': 'enam', 'Kentucky': 'enam',
-    'West Virginia': 'enam', 'Delaware': 'enam', 'Oklahoma': 'enam', 'Kansas': 'enam', 'Nebraska': 'enam',
-    'South Dakota': 'enam', 'North Dakota': 'enam',
+    "New York": "enam",
+    Florida: "enam",
+    Texas: "enam",
+    Illinois: "enam",
+    Georgia: "enam",
+    Pennsylvania: "enam",
+    Ohio: "enam",
+    Michigan: "enam",
+    "North Carolina": "enam",
+    Virginia: "enam",
+    Massachusetts: "enam",
+    "New Jersey": "enam",
+    Maryland: "enam",
+    Connecticut: "enam",
+    Maine: "enam",
+    "New Hampshire": "enam",
+    Vermont: "enam",
+    "Rhode Island": "enam",
+    "South Carolina": "enam",
+    Tennessee: "enam",
+    Alabama: "enam",
+    Mississippi: "enam",
+    Louisiana: "enam",
+    Arkansas: "enam",
+    Missouri: "enam",
+    Iowa: "enam",
+    Minnesota: "enam",
+    Wisconsin: "enam",
+    Indiana: "enam",
+    Kentucky: "enam",
+    "West Virginia": "enam",
+    Delaware: "enam",
+    Oklahoma: "enam",
+    Kansas: "enam",
+    Nebraska: "enam",
+    "South Dakota": "enam",
+    "North Dakota": "enam",
 
     // DC
-    'District of Columbia': 'enam',
+    "District of Columbia": "enam",
   };
 
   // Continent to hint fallback
   const continentToHint: Record<string, string> = {
-    'NA': 'enam',
-    'SA': 'sam',
-    'EU': 'weur',
-    'AS': 'apac',
-    'AF': 'afr',
-    'OC': 'oc'
+    NA: "enam",
+    SA: "sam",
+    EU: "weur",
+    AS: "apac",
+    AF: "afr",
+    OC: "oc",
   };
 
-  // Determine best hint 
+  // Determine best hint
   let bestHint: string;
 
   // Only check US states if country is actually US
-  if (country === 'US' && region && region !== 'unknown') {
-    bestHint = usStateToHint[region] || 'enam';
+  if (country === "US" && region && region !== "unknown") {
+    bestHint = usStateToHint[region] || "enam";
   } else {
     // First try country mapping, then continent fallback
-    bestHint = countryToHint[country] || continentToHint[continent] || 'enam';
+    bestHint = countryToHint[country] || continentToHint[continent] || "enam";
   }
 
   // Find the primary endpoint based on hint
-  const primaryEndpoint = ALL_ENDPOINTS.find(ep => ep.hint === bestHint) || ALL_ENDPOINTS[1]; // Default to ENAM
+  const primaryEndpoint =
+    ALL_ENDPOINTS.find((ep) => ep.hint === bestHint) || ALL_ENDPOINTS[1]; // Default to ENAM
 
   // Order endpoints by proximity (primary first, then others)
   const orderedEndpoints = [
     primaryEndpoint,
-    ...ALL_ENDPOINTS.filter(ep => ep.name !== primaryEndpoint.name)
+    ...ALL_ENDPOINTS.filter((ep) => ep.name !== primaryEndpoint.name),
   ];
 
   // Try each endpoint
@@ -2388,57 +2860,77 @@ async function getOptimalDO(cf: any, env: Env, url: URL): Promise<{ stub: Durabl
 // Database pruning helper functions
 
 // Get the current database size in bytes
-async function getDatabaseSizeBytes(session: D1DatabaseSession): Promise<number> {
+async function getDatabaseSizeBytes(
+  session: D1DatabaseSession,
+): Promise<number> {
   try {
-    const result = await session.prepare('SELECT 1').run();
-    const sizeAfter = (result.meta as { size_after?: number } | undefined)?.size_after;
+    const result = await session.prepare("SELECT 1").run();
+    const sizeAfter = (result.meta as { size_after?: number } | undefined)
+      ?.size_after;
 
-    if (typeof sizeAfter === 'number' && sizeAfter > 0) {
+    if (typeof sizeAfter === "number" && sizeAfter > 0) {
       return sizeAfter;
     }
     return 0;
   } catch (error) {
-    console.error('Error getting database size:', error);
+    console.error("Error getting database size:", error);
     return 0;
   }
 }
 
 // Prune old events to reduce database size
 // Returns the number of events deleted
-async function pruneOldEvents(session: D1DatabaseSession, targetSizeBytes: number): Promise<{ eventsDeleted: number; finalSizeBytes: number }> {
+async function pruneOldEvents(
+  session: D1DatabaseSession,
+  targetSizeBytes: number,
+): Promise<{ eventsDeleted: number; finalSizeBytes: number }> {
   let totalEventsDeleted = 0;
   let currentSize = await getDatabaseSizeBytes(session);
 
-  console.log(`Starting database pruning. Current size: ${(currentSize / (1024 * 1024 * 1024)).toFixed(2)} GB, Target: ${(targetSizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`);
+  console.log(
+    `Starting database pruning. Current size: ${(currentSize / (1024 * 1024 * 1024)).toFixed(2)} GB, Target: ${(targetSizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`,
+  );
 
   // Build the protected kinds clause for SQL
   const protectedKindsArray = Array.from(pruneProtectedKinds);
-  const protectedKindsClause = protectedKindsArray.length > 0
-    ? `AND kind NOT IN (${protectedKindsArray.join(',')})`
-    : '';
+  const protectedKindsClause =
+    protectedKindsArray.length > 0
+      ? `AND kind NOT IN (${protectedKindsArray.join(",")})`
+      : "";
 
   // Keep pruning in batches until we reach target size
   while (currentSize > targetSizeBytes) {
     // Find the oldest events (excluding protected kinds)
-    const oldestEvents = await session.prepare(`
+    const oldestEvents = await session
+      .prepare(
+        `
       SELECT id FROM events
       WHERE 1=1 ${protectedKindsClause}
       ORDER BY created_at ASC
       LIMIT ?
-    `).bind(DB_PRUNE_BATCH_SIZE).all();
+    `,
+      )
+      .bind(DB_PRUNE_BATCH_SIZE)
+      .all();
 
     if (!oldestEvents.results || oldestEvents.results.length === 0) {
-      console.log('No more events eligible for pruning');
+      console.log("No more events eligible for pruning");
       break;
     }
 
     const eventIds = oldestEvents.results.map((row: any) => row.id as string);
-    const placeholders = eventIds.map(() => '?').join(',');
+    const placeholders = eventIds.map(() => "?").join(",");
 
     // Batch all deletes into a single D1 round-trip
     const pruneResults = await session.batch([
-      session.prepare(`DELETE FROM event_tags_cache_multi WHERE event_id IN (${placeholders})`).bind(...eventIds),
-      session.prepare(`DELETE FROM events WHERE id IN (${placeholders})`).bind(...eventIds),
+      session
+        .prepare(
+          `DELETE FROM event_tags_cache_multi WHERE event_id IN (${placeholders})`,
+        )
+        .bind(...eventIds),
+      session
+        .prepare(`DELETE FROM events WHERE id IN (${placeholders})`)
+        .bind(...eventIds),
     ]);
 
     const deletedCount = pruneResults[1]?.meta?.changes || eventIds.length;
@@ -2448,11 +2940,15 @@ async function pruneOldEvents(session: D1DatabaseSession, targetSizeBytes: numbe
 
     // Check current size after deletion
     currentSize = await getDatabaseSizeBytes(session);
-    console.log(`Current database size: ${(currentSize / (1024 * 1024 * 1024)).toFixed(2)} GB`);
+    console.log(
+      `Current database size: ${(currentSize / (1024 * 1024 * 1024)).toFixed(2)} GB`,
+    );
 
     // Safety break - don't delete more than 100,000 events in a single maintenance run
     if (totalEventsDeleted >= 100000) {
-      console.log('Reached maximum pruning limit for this run (100,000 events)');
+      console.log(
+        "Reached maximum pruning limit for this run (100,000 events)",
+      );
       break;
     }
   }
@@ -2466,17 +2962,25 @@ export {
   hasPaidForRelay,
   processEvent,
   queryEvents,
-  calculateQueryComplexity
+  calculateQueryComplexity,
 };
 
 // Main worker export with Durable Object
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext,
+  ): Promise<Response> {
     try {
       const url = new URL(request.url);
 
       // Payment endpoints
-      if (request.method === 'POST' && url.searchParams.has('notify-zap') && PAY_TO_RELAY_ENABLED) {
+      if (
+        request.method === "POST" &&
+        url.searchParams.has("notify-zap") &&
+        PAY_TO_RELAY_ENABLED
+      ) {
         return await handlePaymentNotification(request, env);
       }
 
@@ -2495,11 +2999,11 @@ export default {
 
           // Add location info to the request
           const newUrl = new URL(request.url);
-          newUrl.searchParams.set('region', cf?.region || 'unknown');
-          newUrl.searchParams.set('colo', cf?.colo || 'unknown');
-          newUrl.searchParams.set('continent', cf?.continent || 'unknown');
-          newUrl.searchParams.set('country', cf?.country || 'unknown');
-          newUrl.searchParams.set('doName', doName);
+          newUrl.searchParams.set("region", cf?.region || "unknown");
+          newUrl.searchParams.set("colo", cf?.colo || "unknown");
+          newUrl.searchParams.set("continent", cf?.continent || "unknown");
+          newUrl.searchParams.set("country", cf?.country || "unknown");
+          newUrl.searchParams.set("doName", doName);
 
           return stub.fetch(new Request(newUrl, request));
         } else if (request.headers.get("Accept") === "application/nostr+json") {
@@ -2507,8 +3011,9 @@ export default {
         } else {
           // Initialize database in background
           ctx.waitUntil(
-            initializeDatabase(env.RELAY_DATABASE)
-              .catch(e => console.error("DB init error:", e))
+            initializeDatabase(env.RELAY_DATABASE).catch((e) =>
+              console.error("DB init error:", e),
+            ),
           );
           return serveLandingPage();
         }
@@ -2526,48 +3031,58 @@ export default {
   },
 
   // Scheduled handler for 24hr database maintenance (runs daily at 00:00 UTC)
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    console.log('Running scheduled 24hr database maintenance...');
+  async scheduled(
+    event: ScheduledEvent,
+    env: Env,
+    ctx: ExecutionContext,
+  ): Promise<void> {
+    console.log("Running scheduled 24hr database maintenance...");
 
     try {
-      const session = env.RELAY_DATABASE.withSession('first-primary');
+      const session = env.RELAY_DATABASE.withSession("first-primary");
 
       // Check database size and prune if necessary (D1 has a 10GB limit)
       if (DB_PRUNING_ENABLED) {
         const currentSizeBytes = await getDatabaseSizeBytes(session);
         const currentSizeGB = currentSizeBytes / (1024 * 1024 * 1024);
-        console.log(`Current database size: ${currentSizeGB.toFixed(2)} GB (threshold: ${DB_SIZE_THRESHOLD_GB} GB)`);
+        console.log(
+          `Current database size: ${currentSizeGB.toFixed(2)} GB (threshold: ${DB_SIZE_THRESHOLD_GB} GB)`,
+        );
 
         if (currentSizeGB >= DB_SIZE_THRESHOLD_GB) {
-          console.log(`Database size (${currentSizeGB.toFixed(2)} GB) exceeds threshold (${DB_SIZE_THRESHOLD_GB} GB). Starting pruning...`);
+          console.log(
+            `Database size (${currentSizeGB.toFixed(2)} GB) exceeds threshold (${DB_SIZE_THRESHOLD_GB} GB). Starting pruning...`,
+          );
           const targetSizeBytes = DB_PRUNE_TARGET_GB * 1024 * 1024 * 1024;
           const pruneResult = await pruneOldEvents(session, targetSizeBytes);
-          console.log(`Pruning completed. Deleted ${pruneResult.eventsDeleted} events. Final size: ${(pruneResult.finalSizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`);
+          console.log(
+            `Pruning completed. Deleted ${pruneResult.eventsDeleted} events. Final size: ${(pruneResult.finalSizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`,
+          );
         } else {
-          console.log('Database size is within limits. No pruning needed.');
+          console.log("Database size is within limits. No pruning needed.");
         }
       } else {
-        console.log('Database pruning is disabled.');
+        console.log("Database pruning is disabled.");
       }
 
       // Run PRAGMA optimize (SQLite's intelligent optimization)
-      console.log('Running PRAGMA optimize...');
-      await session.prepare('PRAGMA optimize').run();
-      console.log('PRAGMA optimize completed');
+      console.log("Running PRAGMA optimize...");
+      await session.prepare("PRAGMA optimize").run();
+      console.log("PRAGMA optimize completed");
 
       // Run ANALYZE to update query planner statistics
-      console.log('Running ANALYZE on all tables...');
-      await session.prepare('ANALYZE events').run();
-      await session.prepare('ANALYZE tags').run();
-      await session.prepare('ANALYZE event_tags_cache_multi').run();
-      await session.prepare('ANALYZE content_hashes').run();
-      console.log('ANALYZE completed - query planner statistics updated');
+      console.log("Running ANALYZE on all tables...");
+      await session.prepare("ANALYZE events").run();
+      await session.prepare("ANALYZE tags").run();
+      await session.prepare("ANALYZE event_tags_cache_multi").run();
+      await session.prepare("ANALYZE content_hashes").run();
+      console.log("ANALYZE completed - query planner statistics updated");
 
-      console.log('Scheduled 24hr database maintenance completed successfully');
+      console.log("Scheduled 24hr database maintenance completed successfully");
     } catch (error) {
-      console.error('Scheduled maintenance failed:', error);
+      console.error("Scheduled maintenance failed:", error);
     }
-  }
+  },
 };
 
 // Export the Durable Object class

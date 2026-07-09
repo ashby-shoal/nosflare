@@ -1,1 +1,1 @@
-This folder contains the built output assets for the worker "nosflare" generated at 2026-07-08T22:02:41.112Z.
+This folder contains the built output assets for the worker "nosflare" generated at 2026-07-08T22:43:33.657Z.

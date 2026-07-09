@@ -78,10 +78,10 @@ export const relayInfo: RelayInfo = {
 };
 
 // Nostr address NIP-05 verified users (for verified checkmark like username@your-relay.com)
-export const nip05Users: Record<string, string> = {
-  Luxas: "d49a9023a21dba1b3c8306ca369bf3243d8b44b8f0b6d1196607f7b0990fa8df",
-  // ... more NIP-05 verified users
-};
+export const nip05Users: Record<string, string> = {};
+//Luxas: "d49a9023a21dba1b3c8306ca369bf3243d8b44b8f0b6d1196607f7b0990fa8df",
+// ... more NIP-05 verified users
+// };
 
 // Anti-spam settings
 export const enableAntiSpam = false; // Set to true to enable hashing and duplicate content checking
@@ -116,37 +116,19 @@ export const blockedPubkeys = new Set([
 // Allowed pubkeys
 // Add pubkeys in hex format to allow write access
 export const allowedPubkeys = new Set<string>([
-  "cbba1a2e16b9e199e84c4cf4859425ba3ec35b33d219eafc9ac628b52305a205",
-  "c1ca677ab2863f4135d0a9e19062cf1997483f7592895d716249dd8d6b3b416c",
-  "a8eaa867166a8a2b6830f300b5a9f20de21cb4c0982e1789cdd94dc19ee30b6d",
-  "ccf05134922e8af90f2ffc73592d7713b366d56616f39c9f7af4b630cc1fa464",
-  "e94cf60f97746b1cc24a1e1620097f5e12ee275f1621e0dfaec5384e3fee2483",
-  "40f8d4e642843d5ab39c2147531efe00f496bb2941de7a2a77c0cf6d7db202bd",
-  "ada032722e85becba300807f883860e0e0b9c0a73e57e8e78f6511055d034815",
-  "de9c1a4019f1a3ea7629ed84a9a4c3c8c65b27537d91615ffff6fbb511f8a3d9",
-  "0feb2fe111a3e396e1e2f59f1933a5a58549586e1377c8fa757a61ef5065c61c",
-  "394ca2d0143628263ad99d3c843c668b8702edb55f0078c0a1447bc62b6a2c13",
-  "5916afcb24ba75885a89bb84ad02419f2fb8e2cbe220373094c8832dd09dd73c",
-  "360b7bd8d8db862a80af3e5502398329bc162eb92016bbaf1b6f302eb4e26a6f",
-  "fe515991dd7a0b494ce915c7c225e45427d97ee087fffb192585b75ea0e0898c",
-  "0feb2fe111a3e396e1e2f59f1933a5a58549586e1377c8fa757a61ef5065c61c",
   "b6f2c7a925558bb34c60dd6616647987b89f618e82a16de65e0a4b463f28b974",
   "d130ad0f91722f3e8c66522c54b7ee1e73dcb537e6944b7bf2cbb933d4bf7b2a",
-  "a592f748a615b8a38f9ab84c8b84a6dd2144430b68af1635f41d8b10932df107",
-  "c795156eb13a2034343440fef36aaff1fb479bf24556b4762bb876044e7c2fba",
-  "9bd942ff5f7a055643dcc85c1c4e31c2d4769aa95f37781271a9db7a0321d6b2",
-  "658a771af5a4f10d7ef6a13d19874186ed98ecf0da25e61e424a1bb51cc6aa51",
-  // ... pubkeys that are explicitly allowed
+  "40f8d4e642843d5ab39c2147531efe00f496bb2941de7a2a77c0cf6d7db202bd"
 ]);
 
 // Blocked event kinds
 // Add comma-separated kinds Ex: 1064, 4, 22242
-export const blockedEventKinds = new Set([1064]);
+export const blockedEventKinds = new Set([4]);
 
 // Allowed event kinds
 // Add comma-separated kinds Ex: 1, 2, 3
 export const allowedEventKinds = new Set<number>([
-  7777,
+  7777, 99999,
   // ... kinds that are explicitly allowed
 ]);
 
@@ -181,6 +163,9 @@ export const blockedTags = new Set<string>([
 // Allowed tags
 // Add comma-separated tags Ex: p, e, t
 export const allowedTags = new Set<string>([
+  "e",
+  "crdt",
+  "crdtroom",
   // "p", "e", "t"
   // ... tags that are explicitly allowed
 ]);
@@ -189,7 +174,7 @@ export const allowedTags = new Set<string>([
 export const PUBKEY_RATE_LIMIT = { rate: 10 / 60000, capacity: 10 }; // 10 EVENT messages per min
 export const REQ_RATE_LIMIT = { rate: 50 / 60000, capacity: 50 }; // 50 REQ messages per min
 export const excludedRateLimitKinds = new Set<number>([
-  1059,
+  1059, 7777,
   // ... kinds to exclude from EVENT rate limiting Ex: 1, 2, 3
 ]);
 

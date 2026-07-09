@@ -143,10 +143,7 @@ var relayInfo = {
   //   publication: [{ kinds: [4], amount: 100, unit: "msats" }],
   // }
 };
-var nip05Users = {
-  Luxas: "d49a9023a21dba1b3c8306ca369bf3243d8b44b8f0b6d1196607f7b0990fa8df"
-  // ... more NIP-05 verified users
-};
+var nip05Users = {};
 var enableAntiSpam = false;
 var enableGlobalDuplicateCheck = false;
 var antiSpamKinds = /* @__PURE__ */ new Set([
@@ -288,31 +285,14 @@ var blockedPubkeys = /* @__PURE__ */ new Set([
   "53a756bb596055219d93e888f71d936ec6c47d960320476c955efd8941af4362"
 ]);
 var allowedPubkeys = /* @__PURE__ */ new Set([
-  "cbba1a2e16b9e199e84c4cf4859425ba3ec35b33d219eafc9ac628b52305a205",
-  "c1ca677ab2863f4135d0a9e19062cf1997483f7592895d716249dd8d6b3b416c",
-  "a8eaa867166a8a2b6830f300b5a9f20de21cb4c0982e1789cdd94dc19ee30b6d",
-  "ccf05134922e8af90f2ffc73592d7713b366d56616f39c9f7af4b630cc1fa464",
-  "e94cf60f97746b1cc24a1e1620097f5e12ee275f1621e0dfaec5384e3fee2483",
-  "40f8d4e642843d5ab39c2147531efe00f496bb2941de7a2a77c0cf6d7db202bd",
-  "ada032722e85becba300807f883860e0e0b9c0a73e57e8e78f6511055d034815",
-  "de9c1a4019f1a3ea7629ed84a9a4c3c8c65b27537d91615ffff6fbb511f8a3d9",
-  "0feb2fe111a3e396e1e2f59f1933a5a58549586e1377c8fa757a61ef5065c61c",
-  "394ca2d0143628263ad99d3c843c668b8702edb55f0078c0a1447bc62b6a2c13",
-  "5916afcb24ba75885a89bb84ad02419f2fb8e2cbe220373094c8832dd09dd73c",
-  "360b7bd8d8db862a80af3e5502398329bc162eb92016bbaf1b6f302eb4e26a6f",
-  "fe515991dd7a0b494ce915c7c225e45427d97ee087fffb192585b75ea0e0898c",
-  "0feb2fe111a3e396e1e2f59f1933a5a58549586e1377c8fa757a61ef5065c61c",
   "b6f2c7a925558bb34c60dd6616647987b89f618e82a16de65e0a4b463f28b974",
   "d130ad0f91722f3e8c66522c54b7ee1e73dcb537e6944b7bf2cbb933d4bf7b2a",
-  "a592f748a615b8a38f9ab84c8b84a6dd2144430b68af1635f41d8b10932df107",
-  "c795156eb13a2034343440fef36aaff1fb479bf24556b4762bb876044e7c2fba",
-  "9bd942ff5f7a055643dcc85c1c4e31c2d4769aa95f37781271a9db7a0321d6b2",
-  "658a771af5a4f10d7ef6a13d19874186ed98ecf0da25e61e424a1bb51cc6aa51"
-  // ... pubkeys that are explicitly allowed
+  "40f8d4e642843d5ab39c2147531efe00f496bb2941de7a2a77c0cf6d7db202bd"
 ]);
-var blockedEventKinds = /* @__PURE__ */ new Set([1064]);
+var blockedEventKinds = /* @__PURE__ */ new Set([4]);
 var allowedEventKinds = /* @__PURE__ */ new Set([
-  7777
+  7777,
+  99999
   // ... kinds that are explicitly allowed
 ]);
 var blockedContent = /* @__PURE__ */ new Set([
@@ -332,13 +312,17 @@ var blockedTags = /* @__PURE__ */ new Set([
   // ... tags that are explicitly blocked
 ]);
 var allowedTags = /* @__PURE__ */ new Set([
+  "e",
+  "crdt",
+  "crdtroom"
   // "p", "e", "t"
   // ... tags that are explicitly allowed
 ]);
 var PUBKEY_RATE_LIMIT = { rate: 10 / 6e4, capacity: 10 };
 var REQ_RATE_LIMIT = { rate: 50 / 6e4, capacity: 50 };
 var excludedRateLimitKinds = /* @__PURE__ */ new Set([
-  1059
+  1059,
+  7777
   // ... kinds to exclude from EVENT rate limiting Ex: 1, 2, 3
 ]);
 var DB_PRUNING_ENABLED = true;
@@ -2970,18 +2954,18 @@ var CHUNK_SIZE = 500;
 async function initializeDatabase(db) {
   const dropSession = db.withSession("first-primary");
   try {
-    await dropSession.prepare(`
+    await dropSession.prepare(
+      `
       CREATE TABLE IF NOT EXISTS system_config (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
         created_at INTEGER DEFAULT (strftime('%s', 'now'))
       )
-    `).run();
+    `
+    ).run();
   } catch (_) {
   }
-  const cleanupDone = await dropSession.prepare(
-    "SELECT value FROM system_config WHERE key = 'cleanup_v1' LIMIT 1"
-  ).first().catch(() => null);
+  const cleanupDone = await dropSession.prepare("SELECT value FROM system_config WHERE key = 'cleanup_v1' LIMIT 1").first().catch(() => null);
   if (!cleanupDone || cleanupDone.value !== "1") {
     const dropIndexes = [
       "idx_events_pubkey",
@@ -3016,7 +3000,12 @@ async function initializeDatabase(db) {
     for (const idx of dropIndexes) {
       await dropSession.prepare(`DROP INDEX IF EXISTS ${idx}`).run();
     }
-    const dropTables = ["event_tags_cache", "mv_follow_graph", "mv_recent_notes", "mv_timeline_cache"];
+    const dropTables = [
+      "event_tags_cache",
+      "mv_follow_graph",
+      "mv_recent_notes",
+      "mv_timeline_cache"
+    ];
     for (const tbl of dropTables) {
       await dropSession.prepare(`DROP TABLE IF EXISTS ${tbl}`).run();
     }
@@ -3037,13 +3026,15 @@ async function initializeDatabase(db) {
   }
   const session = db.withSession("first-primary");
   try {
-    await session.prepare(`
+    await session.prepare(
+      `
       CREATE TABLE IF NOT EXISTS system_config (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL,
         created_at INTEGER DEFAULT (strftime('%s', 'now'))
       )
-    `).run();
+    `
+    ).run();
     const statements = [
       `CREATE TABLE IF NOT EXISTS events (
         id TEXT PRIMARY KEY,
@@ -3117,12 +3108,12 @@ async function initializeDatabase(db) {
     await session.prepare(
       "INSERT OR REPLACE INTO system_config (key, value) VALUES ('db_initialized', '1')"
     ).run();
-    const versionResult = await session.prepare(
-      "SELECT value FROM system_config WHERE key = 'schema_version'"
-    ).first();
+    const versionResult = await session.prepare("SELECT value FROM system_config WHERE key = 'schema_version'").first();
     const currentVersion = versionResult ? parseInt(versionResult.value) : 0;
     if (currentVersion < 5) {
-      console.log("Migrating to schema version 5: adding and populating tag columns in events table...");
+      console.log(
+        "Migrating to schema version 5: adding and populating tag columns in events table..."
+      );
       const v5Columns = ["tag_p", "tag_e", "tag_a", "tag_t", "tag_d", "tag_r"];
       for (const col of v5Columns) {
         try {
@@ -3132,7 +3123,8 @@ async function initializeDatabase(db) {
             throw e;
         }
       }
-      await session.prepare(`
+      await session.prepare(
+        `
         UPDATE events
         SET
           tag_p = (SELECT tag_value FROM tags WHERE event_id = events.id AND tag_name = 'p' LIMIT 1),
@@ -3146,12 +3138,22 @@ async function initializeDatabase(db) {
           WHERE t.event_id = events.id
           AND t.tag_name IN ('p', 'e', 'a', 't', 'd', 'r')
         )
-      `).run();
+      `
+      ).run();
       console.log("Schema v5 migration completed");
     }
     if (currentVersion < 6) {
-      console.log("Migrating to schema version 6: adding L/s/u tags and thread metadata...");
-      const v6Columns = ["tag_L", "tag_s", "tag_u", "reply_to_event_id", "root_event_id", "content_preview"];
+      console.log(
+        "Migrating to schema version 6: adding L/s/u tags and thread metadata..."
+      );
+      const v6Columns = [
+        "tag_L",
+        "tag_s",
+        "tag_u",
+        "reply_to_event_id",
+        "root_event_id",
+        "content_preview"
+      ];
       for (const col of v6Columns) {
         try {
           await session.prepare(`ALTER TABLE events ADD COLUMN ${col} TEXT`).run();
@@ -3160,7 +3162,8 @@ async function initializeDatabase(db) {
             throw e;
         }
       }
-      await session.prepare(`
+      await session.prepare(
+        `
         UPDATE events
         SET
           tag_L = (SELECT tag_value FROM tags WHERE event_id = events.id AND tag_name = 'L' LIMIT 1),
@@ -3183,13 +3186,15 @@ async function initializeDatabase(db) {
           WHERE t.event_id = events.id
           AND t.tag_name IN ('L', 's', 'u', 'e')
         ) OR LENGTH(content) > 0
-      `).run();
+      `
+      ).run();
       console.log("Schema v6 migration completed");
     }
     await session.prepare(
       "INSERT OR REPLACE INTO system_config (key, value) VALUES ('schema_version', '6')"
     ).run();
-    await session.prepare(`
+    await session.prepare(
+      `
       INSERT OR IGNORE INTO event_tags_cache_multi (event_id, pubkey, kind, created_at, tag_type, tag_value)
       SELECT
         e.id,
@@ -3201,7 +3206,8 @@ async function initializeDatabase(db) {
       FROM events e
       INNER JOIN tags t ON e.id = t.event_id
       WHERE t.tag_name IN ('p', 'e', 'a', 't', 'd', 'r', 'L', 's', 'u')
-    `).run();
+    `
+    ).run();
     await session.prepare("ANALYZE events").run();
     await session.prepare("ANALYZE tags").run();
     await session.prepare("ANALYZE event_tags_cache_multi").run();
@@ -3255,7 +3261,16 @@ function bytesToHex2(bytes) {
 }
 __name(bytesToHex2, "bytesToHex");
 async function hashContent(event) {
-  const contentToHash = enableGlobalDuplicateCheck2 ? JSON.stringify({ kind: event.kind, tags: event.tags, content: event.content }) : JSON.stringify({ pubkey: event.pubkey, kind: event.kind, tags: event.tags, content: event.content });
+  const contentToHash = enableGlobalDuplicateCheck2 ? JSON.stringify({
+    kind: event.kind,
+    tags: event.tags,
+    content: event.content
+  }) : JSON.stringify({
+    pubkey: event.pubkey,
+    kind: event.kind,
+    tags: event.tags,
+    content: event.content
+  });
   const buffer = new TextEncoder().encode(contentToHash);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
   return bytesToHex2(new Uint8Array(hashBuffer));
@@ -3270,9 +3285,7 @@ async function hasPaidForRelay(pubkey, env) {
     return true;
   try {
     const session = env.RELAY_DATABASE.withSession("first-unconstrained");
-    const result = await session.prepare(
-      "SELECT pubkey FROM paid_pubkeys WHERE pubkey = ? LIMIT 1"
-    ).bind(pubkey).first();
+    const result = await session.prepare("SELECT pubkey FROM paid_pubkeys WHERE pubkey = ? LIMIT 1").bind(pubkey).first();
     return result !== null;
   } catch (error) {
     console.error(`Error checking paid status for ${pubkey}:`, error);
@@ -3283,13 +3296,15 @@ __name(hasPaidForRelay, "hasPaidForRelay");
 async function savePaidPubkey(pubkey, env) {
   try {
     const session = env.RELAY_DATABASE.withSession("first-primary");
-    await session.prepare(`
+    await session.prepare(
+      `
       INSERT INTO paid_pubkeys (pubkey, paid_at, amount_sats)
       VALUES (?, ?, ?)
       ON CONFLICT(pubkey) DO UPDATE SET
         paid_at = excluded.paid_at,
         amount_sats = excluded.amount_sats
-    `).bind(pubkey, Math.floor(Date.now() / 1e3), RELAY_ACCESS_PRICE_SATS2).run();
+    `
+    ).bind(pubkey, Math.floor(Date.now() / 1e3), RELAY_ACCESS_PRICE_SATS2).run();
     return true;
   } catch (error) {
     console.error(`Error saving paid pubkey ${pubkey}:`, error);
@@ -3334,12 +3349,16 @@ function fetchEventFromFallbackRelay(pubkey) {
             resolve(eventData);
           }
         } else if (message[0] === "EOSE") {
-          console.log("EOSE received from fallback relay, no kind 0 event found.");
+          console.log(
+            "EOSE received from fallback relay, no kind 0 event found."
+          );
           closeWebSocket(message[1]);
           resolve(null);
         }
       } catch (error) {
-        console.error(`Error processing fallback relay event for pubkey ${pubkey}: ${error}`);
+        console.error(
+          `Error processing fallback relay event for pubkey ${pubkey}: ${error}`
+        );
         reject(error);
       }
     });
@@ -3355,9 +3374,13 @@ function fetchEventFromFallbackRelay(pubkey) {
     });
     setTimeout(() => {
       if (!hasClosed) {
-        console.log("Timeout reached. Closing WebSocket connection to fallback relay.");
+        console.log(
+          "Timeout reached. Closing WebSocket connection to fallback relay."
+        );
         closeWebSocket(null);
-        reject(new Error(`No response from fallback relay for pubkey ${pubkey}`));
+        reject(
+          new Error(`No response from fallback relay for pubkey ${pubkey}`)
+        );
       }
     }, 5e3);
   });
@@ -3370,7 +3393,9 @@ async function fetchKind0EventForPubkey(pubkey, env) {
     if (result.events && result.events.length > 0) {
       return result.events[0];
     }
-    console.log(`No kind 0 event found locally, trying fallback relay: wss://relay.primal.net`);
+    console.log(
+      `No kind 0 event found locally, trying fallback relay: wss://relay.primal.net`
+    );
     const fallbackEvent = await fetchEventFromFallbackRelay(pubkey);
     if (fallbackEvent) {
       return fallbackEvent;
@@ -3419,12 +3444,16 @@ async function validateNIP05(nip05Address, pubkey) {
     const url = `https://${domain}/.well-known/nostr.json?name=${name}`;
     const response = await fetch(url);
     if (!response.ok) {
-      console.error(`Failed to fetch NIP-05 data from ${url}: ${response.statusText}`);
+      console.error(
+        `Failed to fetch NIP-05 data from ${url}: ${response.statusText}`
+      );
       return false;
     }
     const nip05Data = await response.json();
     if (!nip05Data.names || !nip05Data.names[name]) {
-      console.error(`NIP-05 data does not contain a matching public key for ${name}`);
+      console.error(
+        `NIP-05 data does not contain a matching public key for ${name}`
+      );
       return false;
     }
     const nip05Pubkey = nip05Data.names[name];
@@ -3459,7 +3488,9 @@ async function processEvent(event, sessionId, env) {
     if (event.kind !== 1059 && checkValidNip052 && event.kind !== 0) {
       const isValidNIP05 = await validateNIP05FromKind0(event.pubkey, env);
       if (!isValidNIP05) {
-        console.error(`Event denied. NIP-05 validation failed for pubkey ${event.pubkey}.`);
+        console.error(
+          `Event denied. NIP-05 validation failed for pubkey ${event.pubkey}.`
+        );
         return { success: false, message: "invalid: NIP-05 validation failed" };
       }
     }
@@ -3487,7 +3518,11 @@ async function saveEventToDatabase(event, env) {
     const session = env.RELAY_DATABASE.withSession("first-primary");
     const existingEvent = await session.prepare("SELECT id FROM events WHERE id = ? LIMIT 1").bind(event.id).first();
     if (existingEvent) {
-      return { success: false, message: "duplicate: event already exists", bookmark: session.getBookmark() ?? void 0 };
+      return {
+        success: false,
+        message: "duplicate: event already exists",
+        bookmark: session.getBookmark() ?? void 0
+      };
     }
     const isReplaceable = event.kind === 0 || event.kind === 3 || event.kind >= 1e4 && event.kind < 2e4;
     if (isReplaceable) {
@@ -3496,7 +3531,11 @@ async function saveEventToDatabase(event, env) {
       ).bind(event.kind, event.pubkey).first();
       if (existing) {
         if (event.created_at <= existing.created_at) {
-          return { success: false, message: "duplicate: a newer or equal replaceable event already exists", bookmark: session.getBookmark() ?? void 0 };
+          return {
+            success: false,
+            message: "duplicate: a newer or equal replaceable event already exists",
+            bookmark: session.getBookmark() ?? void 0
+          };
         }
         const oldId = existing.id;
         await session.batch([
@@ -3505,7 +3544,9 @@ async function saveEventToDatabase(event, env) {
           session.prepare("DELETE FROM event_tags_cache_multi WHERE event_id = ?").bind(oldId),
           session.prepare("DELETE FROM events WHERE id = ?").bind(oldId)
         ]);
-        console.log(`Replaced older event ${oldId} with newer event ${event.id} (kind ${event.kind})`);
+        console.log(
+          `Replaced older event ${oldId} with newer event ${event.id} (kind ${event.kind})`
+        );
       }
     }
     const isParameterizedReplaceable = event.kind >= 3e4 && event.kind < 4e4;
@@ -3516,7 +3557,11 @@ async function saveEventToDatabase(event, env) {
       ).bind(event.kind, event.pubkey, dTag).first();
       if (existing) {
         if (event.created_at <= existing.created_at) {
-          return { success: false, message: "duplicate: a newer or equal parameterized replaceable event already exists", bookmark: session.getBookmark() ?? void 0 };
+          return {
+            success: false,
+            message: "duplicate: a newer or equal parameterized replaceable event already exists",
+            bookmark: session.getBookmark() ?? void 0
+          };
         }
         const oldId = existing.id;
         await session.batch([
@@ -3525,15 +3570,25 @@ async function saveEventToDatabase(event, env) {
           session.prepare("DELETE FROM event_tags_cache_multi WHERE event_id = ?").bind(oldId),
           session.prepare("DELETE FROM events WHERE id = ?").bind(oldId)
         ]);
-        console.log(`Replaced older parameterized event ${oldId} with newer event ${event.id} (kind ${event.kind}, d=${dTag})`);
+        console.log(
+          `Replaced older parameterized event ${oldId} with newer event ${event.id} (kind ${event.kind}, d=${dTag})`
+        );
       }
     }
     let contentHash = null;
     if (shouldCheckForDuplicates(event.kind)) {
       contentHash = await hashContent(event);
-      const duplicateContent = enableGlobalDuplicateCheck2 ? await session.prepare("SELECT event_id FROM content_hashes WHERE hash = ? LIMIT 1").bind(contentHash).first() : await session.prepare("SELECT event_id FROM content_hashes WHERE hash = ? AND pubkey = ? LIMIT 1").bind(contentHash, event.pubkey).first();
+      const duplicateContent = enableGlobalDuplicateCheck2 ? await session.prepare(
+        "SELECT event_id FROM content_hashes WHERE hash = ? LIMIT 1"
+      ).bind(contentHash).first() : await session.prepare(
+        "SELECT event_id FROM content_hashes WHERE hash = ? AND pubkey = ? LIMIT 1"
+      ).bind(contentHash, event.pubkey).first();
       if (duplicateContent) {
-        return { success: false, message: "duplicate: content already exists", bookmark: session.getBookmark() ?? void 0 };
+        return {
+          success: false,
+          message: "duplicate: content already exists",
+          bookmark: session.getBookmark() ?? void 0
+        };
       }
     }
     const tagInserts = [];
@@ -3576,11 +3631,13 @@ async function saveEventToDatabase(event, env) {
     const replyToEventId = eTags.length > 0 ? eTags[0] : null;
     const rootEventId = eTags.length > 1 ? eTags[eTags.length - 1] : null;
     const contentPreview = event.content.substring(0, 100);
-    const insertResult = await session.prepare(`
+    const insertResult = await session.prepare(
+      `
       INSERT INTO events (id, pubkey, created_at, kind, tags, content, sig, tag_p, tag_e, tag_a, tag_t, tag_d, tag_r, tag_L, tag_s, tag_u, reply_to_event_id, root_event_id, content_preview)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO NOTHING
-    `).bind(
+    `
+    ).bind(
       event.id,
       event.pubkey,
       event.created_at,
@@ -3602,46 +3659,76 @@ async function saveEventToDatabase(event, env) {
       contentPreview
     ).run();
     if (insertResult.meta.changes === 0) {
-      console.log(`Event ${event.id} already exists in database (race condition duplicate)`);
-      return { success: false, message: "duplicate: event already exists", bookmark: session.getBookmark() ?? void 0 };
+      console.log(
+        `Event ${event.id} already exists in database (race condition duplicate)`
+      );
+      return {
+        success: false,
+        message: "duplicate: event already exists",
+        bookmark: session.getBookmark() ?? void 0
+      };
     }
     const postInsertBatch = [];
     for (const t of tagInserts) {
       postInsertBatch.push(
-        session.prepare("INSERT INTO tags (event_id, tag_name, tag_value) VALUES (?, ?, ?)").bind(event.id, t.name, t.value)
+        session.prepare(
+          "INSERT INTO tags (event_id, tag_name, tag_value) VALUES (?, ?, ?)"
+        ).bind(event.id, t.name, t.value)
       );
     }
-    const cacheableTags = tagInserts.filter((t) => ["p", "e", "a", "t", "d", "r", "L", "s", "u"].includes(t.name));
+    const cacheableTags = tagInserts.filter(
+      (t) => ["p", "e", "a", "t", "d", "r", "L", "s", "u"].includes(t.name)
+    );
     for (const t of cacheableTags) {
       postInsertBatch.push(
-        session.prepare(`
+        session.prepare(
+          `
           INSERT OR IGNORE INTO event_tags_cache_multi (event_id, pubkey, kind, created_at, tag_type, tag_value)
           VALUES (?, ?, ?, ?, ?, ?)
-        `).bind(event.id, event.pubkey, event.kind, event.created_at, t.name, t.value)
+        `
+        ).bind(
+          event.id,
+          event.pubkey,
+          event.kind,
+          event.created_at,
+          t.name,
+          t.value
+        )
       );
     }
     if (contentHash) {
       postInsertBatch.push(
-        session.prepare(`
+        session.prepare(
+          `
           INSERT INTO content_hashes (hash, event_id, pubkey, created_at)
           VALUES (?, ?, ?, ?)
           ON CONFLICT(hash) DO NOTHING
-        `).bind(contentHash, event.id, event.pubkey, event.created_at)
+        `
+        ).bind(contentHash, event.id, event.pubkey, event.created_at)
       );
     }
     for (let i = 0; i < postInsertBatch.length; i += 100) {
       await session.batch(postInsertBatch.slice(i, i + 100));
     }
-    await cache.put(cacheKey, new Response("cached", {
-      headers: {
-        "Cache-Control": "max-age=3600"
-      }
-    }));
+    await cache.put(
+      cacheKey,
+      new Response("cached", {
+        headers: {
+          "Cache-Control": "max-age=3600"
+        }
+      })
+    );
     console.log(`Event ${event.id} saved directly to database`);
-    return { success: true, message: "Event saved successfully", bookmark: session.getBookmark() ?? void 0 };
+    return {
+      success: true,
+      message: "Event saved successfully",
+      bookmark: session.getBookmark() ?? void 0
+    };
   } catch (error) {
     console.error(`Error saving event to database: ${error.message}`);
-    console.error(`Event details: ID=${event.id}, Kind=${event.kind}, Tags count=${event.tags.length}`);
+    console.error(
+      `Event details: ID=${event.id}, Kind=${event.kind}, Tags count=${event.tags.length}`
+    );
     return { success: false, message: `error: ${error.message}` };
   }
 }
@@ -3651,7 +3738,11 @@ async function processDeletionEvent(event, env) {
   const deletedEventIds = event.tags.filter((tag) => tag[0] === "e").map((tag) => tag[1]);
   const session = env.RELAY_DATABASE.withSession("first-primary");
   if (deletedEventIds.length === 0) {
-    return { success: true, message: "No events to delete", bookmark: session.getBookmark() ?? void 0 };
+    return {
+      success: true,
+      message: "No events to delete",
+      bookmark: session.getBookmark() ?? void 0
+    };
   }
   let deletedCount = 0;
   const errors = [];
@@ -3669,12 +3760,18 @@ async function processDeletionEvent(event, env) {
       for (const eventId of deletedEventIds) {
         const ownerPubkey = eventOwners.get(eventId);
         if (!ownerPubkey) {
-          console.warn(`Event ${eventId} not found in D1. Nothing to delete (may be in queue).`);
+          console.warn(
+            `Event ${eventId} not found in D1. Nothing to delete (may be in queue).`
+          );
           continue;
         }
         if (ownerPubkey !== event.pubkey) {
-          console.warn(`Event ${eventId} does not belong to pubkey ${event.pubkey}. Skipping deletion.`);
-          errors.push(`unauthorized: cannot delete event ${eventId} - wrong pubkey`);
+          console.warn(
+            `Event ${eventId} does not belong to pubkey ${event.pubkey}. Skipping deletion.`
+          );
+          errors.push(
+            `unauthorized: cannot delete event ${eventId} - wrong pubkey`
+          );
           continue;
         }
         idsToDelete.push(eventId);
@@ -3707,12 +3804,16 @@ async function processDeletionEvent(event, env) {
   }
   const saveResult = await saveEventToDatabase(event, env);
   if (errors.length > 0) {
-    return { success: false, message: errors[0], bookmark: saveResult.bookmark ?? (session.getBookmark() ?? void 0) };
+    return {
+      success: false,
+      message: errors[0],
+      bookmark: saveResult.bookmark ?? session.getBookmark() ?? void 0
+    };
   }
   return {
     success: true,
     message: deletedCount > 0 ? `Successfully deleted ${deletedCount} event(s)` : "No matching events found to delete",
-    bookmark: saveResult.bookmark ?? (session.getBookmark() ?? void 0)
+    bookmark: saveResult.bookmark ?? session.getBookmark() ?? void 0
   };
 }
 __name(processDeletionEvent, "processDeletionEvent");
@@ -3941,11 +4042,15 @@ function buildQuery(filter) {
       params.push(...filter.ids);
     }
     if (filter.authors && filter.authors.length > 0) {
-      whereConditions.push(`e.pubkey IN (${filter.authors.map(() => "?").join(",")})`);
+      whereConditions.push(
+        `e.pubkey IN (${filter.authors.map(() => "?").join(",")})`
+      );
       params.push(...filter.authors);
     }
     if (filter.kinds && filter.kinds.length > 0) {
-      whereConditions.push(`${cacheAlias}.kind IN (${filter.kinds.map(() => "?").join(",")})`);
+      whereConditions.push(
+        `${cacheAlias}.kind IN (${filter.kinds.map(() => "?").join(",")})`
+      );
       params.push(...filter.kinds);
     }
     if (filter.since) {
@@ -3958,7 +4063,9 @@ function buildQuery(filter) {
     }
     if (filter.cursor) {
       const [timestamp, lastId] = filter.cursor.split(":");
-      whereConditions.push(`(${cacheAlias}.created_at < ? OR (${cacheAlias}.created_at = ? AND e.id > ?))`);
+      whereConditions.push(
+        `(${cacheAlias}.created_at < ? OR (${cacheAlias}.created_at = ? AND e.id > ?))`
+      );
       params.push(parseInt(timestamp), parseInt(timestamp), lastId);
     }
     if (whereConditions.length > 0) {
@@ -3978,15 +4085,21 @@ function buildQuery(filter) {
       params.push(tagFilter.name, ...tagFilter.values);
       const whereConditions2 = [];
       if (filter.ids && filter.ids.length > 0) {
-        whereConditions2.push(`e.id IN (${filter.ids.map(() => "?").join(",")})`);
+        whereConditions2.push(
+          `e.id IN (${filter.ids.map(() => "?").join(",")})`
+        );
         params.push(...filter.ids);
       }
       if (filter.authors && filter.authors.length > 0) {
-        whereConditions2.push(`e.pubkey IN (${filter.authors.map(() => "?").join(",")})`);
+        whereConditions2.push(
+          `e.pubkey IN (${filter.authors.map(() => "?").join(",")})`
+        );
         params.push(...filter.authors);
       }
       if (filter.kinds && filter.kinds.length > 0) {
-        whereConditions2.push(`e.kind IN (${filter.kinds.map(() => "?").join(",")})`);
+        whereConditions2.push(
+          `e.kind IN (${filter.kinds.map(() => "?").join(",")})`
+        );
         params.push(...filter.kinds);
       }
       if (filter.since) {
@@ -3999,7 +4112,9 @@ function buildQuery(filter) {
       }
       if (filter.cursor) {
         const [timestamp, lastId] = filter.cursor.split(":");
-        whereConditions2.push("(e.created_at < ? OR (e.created_at = ? AND e.id > ?))");
+        whereConditions2.push(
+          "(e.created_at < ? OR (e.created_at = ? AND e.id > ?))"
+        );
         params.push(parseInt(timestamp), parseInt(timestamp), lastId);
       }
       if (whereConditions2.length > 0) {
@@ -4026,11 +4141,15 @@ function buildQuery(filter) {
       params.push(...filter.ids);
     }
     if (filter.authors && filter.authors.length > 0) {
-      whereConditions.push(`e.pubkey IN (${filter.authors.map(() => "?").join(",")})`);
+      whereConditions.push(
+        `e.pubkey IN (${filter.authors.map(() => "?").join(",")})`
+      );
       params.push(...filter.authors);
     }
     if (filter.kinds && filter.kinds.length > 0) {
-      whereConditions.push(`e.kind IN (${filter.kinds.map(() => "?").join(",")})`);
+      whereConditions.push(
+        `e.kind IN (${filter.kinds.map(() => "?").join(",")})`
+      );
       params.push(...filter.kinds);
     }
     if (filter.since) {
@@ -4043,7 +4162,9 @@ function buildQuery(filter) {
     }
     if (filter.cursor) {
       const [timestamp, lastId] = filter.cursor.split(":");
-      whereConditions.push("(e.created_at < ? OR (e.created_at = ? AND e.id > ?))");
+      whereConditions.push(
+        "(e.created_at < ? OR (e.created_at = ? AND e.id > ?))"
+      );
       params.push(parseInt(timestamp), parseInt(timestamp), lastId);
     }
     if (whereConditions.length > 0) {
@@ -4220,7 +4341,9 @@ async function queryDatabaseChunked(filter, bookmark, env) {
 __name(queryDatabaseChunked, "queryDatabaseChunked");
 async function queryEvents(filters, bookmark, env) {
   try {
-    console.log(`Processing query with ${filters.length} filters and bookmark: ${bookmark}`);
+    console.log(
+      `Processing query with ${filters.length} filters and bookmark: ${bookmark}`
+    );
     const session = env.RELAY_DATABASE.withSession(bookmark);
     const eventSet = /* @__PURE__ */ new Map();
     const chunkedFilters = [];
@@ -4228,7 +4351,9 @@ async function queryEvents(filters, bookmark, env) {
     for (const filter of filters) {
       const complexity = calculateQueryComplexity(filter);
       if (complexity > MAX_QUERY_COMPLEXITY) {
-        console.warn(`Query too complex (complexity: ${complexity}), skipping filter`);
+        console.warn(
+          `Query too complex (complexity: ${complexity}), skipping filter`
+        );
         continue;
       }
       const needsChunking = filter.ids && filter.ids.length > CHUNK_SIZE || filter.authors && filter.authors.length > CHUNK_SIZE || filter.kinds && filter.kinds.length > CHUNK_SIZE || Object.entries(filter).some(
@@ -4243,10 +4368,14 @@ async function queryEvents(filters, bookmark, env) {
     let totalEventsRead = 0;
     for (const filter of chunkedFilters) {
       if (totalEventsRead >= GLOBAL_MAX_EVENTS) {
-        console.warn(`Global event limit reached (${GLOBAL_MAX_EVENTS}), stopping query`);
+        console.warn(
+          `Global event limit reached (${GLOBAL_MAX_EVENTS}), stopping query`
+        );
         break;
       }
-      console.log(`Filter has arrays >${CHUNK_SIZE} items, using chunked query...`);
+      console.log(
+        `Filter has arrays >${CHUNK_SIZE} items, using chunked query...`
+      );
       const chunkedResult = await queryDatabaseChunked(filter, bookmark, env);
       for (const event of chunkedResult.events) {
         if (totalEventsRead >= GLOBAL_MAX_EVENTS)
@@ -4258,16 +4387,22 @@ async function queryEvents(filters, bookmark, env) {
     if (batchableFilters.length > 0 && totalEventsRead < GLOBAL_MAX_EVENTS) {
       const validFilters = [];
       for (const filter of batchableFilters) {
-        const hasTagFilters = Object.keys(filter).some((key) => key.startsWith("#"));
+        const hasTagFilters = Object.keys(filter).some(
+          (key) => key.startsWith("#")
+        );
         if (hasTagFilters) {
           const countQuery = buildCountQuery(filter);
           const countResult = await session.prepare(countQuery.sql).bind(...countQuery.params).first();
           const estimatedRows = countResult?.count || 0;
           if (estimatedRows > 1e4) {
-            console.warn(`Query precheck: estimated ${estimatedRows} rows, skipping filter to prevent timeout`);
+            console.warn(
+              `Query precheck: estimated ${estimatedRows} rows, skipping filter to prevent timeout`
+            );
             continue;
           } else {
-            console.log(`Query precheck: estimated ${estimatedRows} rows, proceeding`);
+            console.log(
+              `Query precheck: estimated ${estimatedRows} rows, proceeding`
+            );
           }
         }
         validFilters.push(filter);
@@ -4381,319 +4516,259 @@ function serveLandingPage() {
     </div>
   `;
   const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A serverless Nostr relay through Cloudflare Worker and D1 database" />
-    <title>Nosflare - Nostr Relay</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Nostr Relay Event Viewer</title>
+
+        <style>
+          * {
             box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #0a0a0a;
-            color: #ffffff;
-            min-height: 100vh;
+          }
+
+          body {
+            margin: 0;
+            padding: 20px;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-family: Arial, sans-serif;
+          }
+
+          h1 {
+            margin-top: 0;
+            font-size: 28px;
+          }
+
+          .status {
+            margin-bottom: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #1e293b;
+            font-size: 14px;
+          }
+
+          .connected {
+            color: #22c55e;
+          }
+
+          .error {
+            color: #ef4444;
+          }
+
+          .events {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(255, 69, 0, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 50%, rgba(255, 140, 0, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 50% 100%, rgba(255, 0, 0, 0.05) 0%, transparent 50%);
-            animation: pulse 10s ease-in-out infinite;
-            z-index: -1;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-        
-        .container {
-            text-align: center;
-            padding: 2rem;
-            max-width: 600px;
-            z-index: 1;
-        }
-        
-        .logo {
-            width: 400px;
-            height: auto;
-            filter: drop-shadow(0 0 30px rgba(255, 69, 0, 0.5));
-        }
-        
-        .tagline {
-            font-size: 1.2rem;
-            color: #999;
-            margin-bottom: 3rem;
-        }
-        
-        .info-box, .pay-section {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 16px;
+          }
+
+          .event {
+            background: #111827;
+            border: 1px solid #334155;
             border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(10px);
-        }
-        
-        .pay-button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            margin: 1rem 0;
-            transition: transform 0.3s ease;
-        }
-        
-        .pay-button:hover {
-            transform: scale(1.05);
-        }
-        
-        .price-info {
-            font-size: 1.2rem;
-            color: #ff8c00;
-            font-weight: 600;
-        }
-        
-        .url-display {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 69, 0, 0.3);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
-            color: #ff8c00;
-            margin: 1rem 0;
-            word-break: break-all;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .url-display:hover {
-            border-color: #ff4500;
-            background: rgba(255, 69, 0, 0.1);
-        }
-        
-        .copy-hint {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 0.5rem;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-        
-        .stat-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 1rem;
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #ff4500;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #999;
-            margin-top: 0.25rem;
-        }
-        
-        .links {
-            margin-top: 3rem;
+            padding: 16px;
+            overflow: hidden;
+          }
+
+          .meta {
             display: flex;
-            gap: 2rem;
-            justify-content: center;
             flex-wrap: wrap;
-        }
-        
-        .link {
-            color: #ff8c00;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s ease;
-        }
-        
-        .link:hover {
-            color: #ff4500;
-        }
-        
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            background: #ff4500;
-            color: white;
-            padding: 1rem 2rem;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+          }
+
+          .label {
+            color: #cbd5e1;
+            font-weight: 600;
+          }
+
+          .content {
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.5;
+            margin-bottom: 12px;
+          }
+
+          .json {
+            margin-top: 12px;
+            background: #020617;
+            padding: 12px;
             border-radius: 8px;
-            transform: translateY(100px);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-        
-        .toast.show {
-            transform: translateY(0);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <img src="https://nosflare.com/images/nosflare.png" alt="Nosflare Logo" class="logo">
-        <p class="tagline">A serverless Nostr relay powered by Cloudflare</p>
-        
-        ${payToRelaySection}
-        
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value">${relayInfo2.supported_nips.length}</div>
-                <div class="stat-label">Supported NIPs</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">${relayInfo2.version}</div>
-                <div class="stat-label">Version</div>
-            </div>
+            overflow-x: auto;
+            font-size: 12px;
+            color: #93c5fd;
+          }
+
+          button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 14px;
+          }
+
+          button:hover {
+            background: #1d4ed8;
+          }
+
+          .small {
+            font-size: 11px;
+            opacity: 0.8;
+          }
+        </style>
+      </head>
+      <body>
+
+        <h1>Latest 7 Nostr Events</h1>
+
+        <button id="reloadBtn">Reload Events</button>
+
+        <div class="status" id="status">
+          Connecting to relay...
         </div>
-        
-        <div class="links">
-            <a href="https://github.com/Spl0itable/nosflare" class="link" target="_blank">GitHub</a>
-            <a href="https://nostr.com" class="link" target="_blank">Learn about Nostr</a>
-        </div>
-    </div>
-    
-    <div class="toast" id="toast">Copied to clipboard!</div>
-    
-    <script>
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const relayUrl = protocol + '//' + window.location.host;
-        const relayUrlElement = document.getElementById('relay-url');
-        if (relayUrlElement) {
-            relayUrlElement.textContent = relayUrl;
-        }
-        
-        function copyToClipboard() {
-            const relayUrl = document.getElementById('relay-url').textContent;
-            navigator.clipboard.writeText(relayUrl).then(() => {
-                const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 2000);
+
+        <div class="events" id="events"></div>
+
+        <script>
+          const RELAY_URL = "wss://nosflare.ashby-shoal-com.workers.dev";
+          const LIMIT = 7;
+
+          const statusEl = document.getElementById("status");
+          const eventsEl = document.getElementById("events");
+          const reloadBtn = document.getElementById("reloadBtn");
+
+          let socket;
+          let receivedEvents = [];
+
+          function setStatus(message, className) {
+            className = className || "";
+            statusEl.className = "status " + className;
+            statusEl.textContent = message;
+          }
+
+          function truncate(str, len) {
+            len = len || 24;
+            if (!str) return "";
+            return str.length > len ? str.slice(0, len) + "..." : str;
+          }
+
+          function formatDate(ts) {
+            return new Date(ts * 1000).toLocaleString();
+          }
+
+          function escapeHtml(str) {
+            return str
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;");
+          }
+
+          function renderEvent(event) {
+            const div = document.createElement("div");
+            div.className = "event";
+
+            const content = event.content && event.content.trim().length ? event.content : "(no content)";
+
+            div.innerHTML =
+              '<div class="meta">' +
+                '<div><span class="label">Kind:</span> ' + event.kind + '</div>' +
+                '<div><span class="label">Created:</span> ' + formatDate(event.created_at) + '</div>' +
+                '<div><span class="label">Pubkey:</span> ' + truncate(event.pubkey, 32) + '</div>' +
+                '<div><span class="label">ID:</span> ' + truncate(event.id, 32) + '</div>' +
+              '</div>' +
+              '<div class="content">' + escapeHtml(content) + '</div>' +
+              '<details>' +
+                '<summary class="small">View Raw JSON</summary>' +
+                '<pre class="json">' + escapeHtml(JSON.stringify(event, null, 2)) + '</pre>' +
+              '</details>';
+
+            return div;
+          }
+
+          function renderEvents() {
+            // Sort by created_at descending (newest first)
+            receivedEvents.sort((a, b) => b.created_at - a.created_at);
+
+            eventsEl.innerHTML = "";
+
+            receivedEvents.forEach(event => {
+              eventsEl.appendChild(renderEvent(event));
             });
-        }
-        
-        ${PAY_TO_RELAY_ENABLED2 ? `
-        // Payment handling code
-        let paymentCheckInterval;
+          }
 
-        async function checkPaymentStatus() {
-            if (!window.nostr || !window.nostr.getPublicKey) return false;
-            
-            try {
-                const pubkey = await window.nostr.getPublicKey();
-                const response = await fetch('/api/check-payment?pubkey=' + pubkey);
-                const data = await response.json();
-                
-                if (data.paid) {
-                    showRelayAccess();
-                    return true;
+          function connect() {
+            if (socket) {
+              socket.close();
+            }
+
+            receivedEvents = [];
+            eventsEl.innerHTML = "";
+            setStatus("Connecting to relay...");
+
+            socket = new WebSocket(RELAY_URL);
+
+            socket.onopen = function() {
+              setStatus("Connected to " + RELAY_URL, "connected");
+
+              const subId = "latest-events-" + Date.now();
+
+              const req = [
+                "REQ",
+                subId,
+                {
+                  limit: LIMIT
                 }
-                return false;
-            } catch (error) {
-                console.error('Error checking payment status:', error);
-                return false;
-            }
-        }
+              ];
 
-        function showRelayAccess() {
-            const paySection = document.getElementById('paySection');
-            const accessSection = document.getElementById('accessSection');
-            
-            if (paySection && accessSection) {
-                paySection.style.transition = 'opacity 0.3s ease-out';
-                paySection.style.opacity = '0';
-                
-                setTimeout(() => {
-                    paySection.style.display = 'none';
-                    accessSection.style.display = 'block';
-                    accessSection.style.opacity = '0';
-                    accessSection.style.transition = 'opacity 0.3s ease-in';
-                    
-                    void accessSection.offsetHeight;
-                    
-                    accessSection.style.opacity = '1';
-                }, 300);
-            }
-            
-            if (paymentCheckInterval) {
-                clearInterval(paymentCheckInterval);
-                paymentCheckInterval = null;
-            }
-        }
-
-        window.addEventListener('payment-success', async (event) => {
-            console.log('Payment success event received');
-            setTimeout(() => {
-                showRelayAccess();
-            }, 500);
-        });
-
-        async function initPayment() {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/gh/Spl0itable/nosflare@main/nostr-zap.js';
-            script.onload = () => {
-                if (window.nostrZap) {
-                    window.nostrZap.initTargets('#payButton');
-                    
-                    document.getElementById('payButton').addEventListener('click', () => {
-                        if (!paymentCheckInterval) {
-                            paymentCheckInterval = setInterval(async () => {
-                                await checkPaymentStatus();
-                            }, 3000);
-                        }
-                    });
-                }
+              socket.send(JSON.stringify(req));
             };
-            document.head.appendChild(script);
-            
-            await checkPaymentStatus();
-        }
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initPayment);
-        } else {
-            initPayment();
-        }
-        ` : ""}
-    </script>
-    ${PAY_TO_RELAY_ENABLED2 ? '<script src="https://unpkg.com/nostr-login@latest/dist/unpkg.js" data-perms="sign_event:1" data-methods="connect,extension,local" data-dark-mode="true"></script>' : ""}
-</body>
-</html>
-  `;
+            socket.onmessage = function(msg) {
+              try {
+                const data = JSON.parse(msg.data);
+
+                if (data[0] === "EVENT") {
+                  const event = data[2];
+                  receivedEvents.push(event);
+                }
+
+                if (data[0] === "EOSE") {
+                  renderEvents();
+                  setStatus("Loaded " + receivedEvents.length + " events (sorted newest first)", "connected");
+                }
+
+                if (data[0] === "NOTICE") {
+                  console.log("NOTICE:", data[1]);
+                }
+
+              } catch (err) {
+                console.error("Failed to parse message", err);
+              }
+            };
+
+            socket.onerror = function(err) {
+              console.error(err);
+              setStatus("WebSocket error", "error");
+            };
+
+            socket.onclose = function() {
+              setStatus("Disconnected from relay", "error");
+            };
+          }
+
+          reloadBtn.addEventListener("click", connect);
+
+          connect();
+        </script>
+
+      </body>
+    </html>
+    `;
   return new Response(html, {
     status: 200,
     headers: {
@@ -4755,10 +4830,16 @@ async function handleCheckPayment(request, env) {
   }
   const paid = await hasPaidForRelay(pubkey, env);
   if (paid === null) {
-    return new Response(JSON.stringify({ error: "Unable to verify payment status" }), {
-      status: 503,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-    });
+    return new Response(
+      JSON.stringify({ error: "Unable to verify payment status" }),
+      {
+        status: 503,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      }
+    );
   }
   return new Response(JSON.stringify({ paid }), {
     status: 200,
@@ -4786,16 +4867,19 @@ async function handlePaymentNotification(request, env) {
       });
     }
     const success = await savePaidPubkey(pubkey, env);
-    return new Response(JSON.stringify({
-      success,
-      message: success ? "Payment recorded successfully" : "Failed to save payment"
-    }), {
-      status: success ? 200 : 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+    return new Response(
+      JSON.stringify({
+        success,
+        message: success ? "Payment recorded successfully" : "Failed to save payment"
+      }),
+      {
+        status: success ? 200 : 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
       }
-    });
+    );
   } catch (error) {
     console.error("Error processing payment notification:", error);
     return new Response(JSON.stringify({ error: "Invalid request" }), {
@@ -4813,7 +4897,9 @@ async function getOptimalDO(cf, env, url) {
   const country = cf?.country || "US";
   const region = cf?.region || "unknown";
   const colo = cf?.colo || "unknown";
-  console.log(`User location: continent=${continent}, country=${country}, region=${region}, colo=${colo}`);
+  console.log(
+    `User location: continent=${continent}, country=${country}, region=${region}, colo=${colo}`
+  );
   const ALL_ENDPOINTS = [
     { name: "relay-WNAM-primary", hint: "wnam" },
     { name: "relay-ENAM-primary", hint: "enam" },
@@ -4827,283 +4913,283 @@ async function getOptimalDO(cf, env, url) {
   ];
   const countryToHint = {
     // North America
-    "US": "enam",
-    "CA": "enam",
-    "MX": "wnam",
+    US: "enam",
+    CA: "enam",
+    MX: "wnam",
     // Central America & Caribbean (route to WNAM)
-    "GT": "wnam",
-    "BZ": "wnam",
-    "SV": "wnam",
-    "HN": "wnam",
-    "NI": "wnam",
-    "CR": "wnam",
-    "PA": "wnam",
-    "CU": "wnam",
-    "DO": "wnam",
-    "HT": "wnam",
-    "JM": "wnam",
-    "PR": "wnam",
-    "TT": "wnam",
-    "BB": "wnam",
+    GT: "wnam",
+    BZ: "wnam",
+    SV: "wnam",
+    HN: "wnam",
+    NI: "wnam",
+    CR: "wnam",
+    PA: "wnam",
+    CU: "wnam",
+    DO: "wnam",
+    HT: "wnam",
+    JM: "wnam",
+    PR: "wnam",
+    TT: "wnam",
+    BB: "wnam",
     // South America
-    "BR": "sam",
-    "AR": "sam",
-    "CL": "sam",
-    "CO": "sam",
-    "PE": "sam",
-    "VE": "sam",
-    "EC": "sam",
-    "BO": "sam",
-    "PY": "sam",
-    "UY": "sam",
-    "GY": "sam",
-    "SR": "sam",
-    "GF": "sam",
+    BR: "sam",
+    AR: "sam",
+    CL: "sam",
+    CO: "sam",
+    PE: "sam",
+    VE: "sam",
+    EC: "sam",
+    BO: "sam",
+    PY: "sam",
+    UY: "sam",
+    GY: "sam",
+    SR: "sam",
+    GF: "sam",
     // Western Europe
-    "GB": "weur",
-    "FR": "weur",
-    "DE": "weur",
-    "ES": "weur",
-    "IT": "weur",
-    "NL": "weur",
-    "BE": "weur",
-    "CH": "weur",
-    "AT": "weur",
-    "PT": "weur",
-    "IE": "weur",
-    "LU": "weur",
-    "MC": "weur",
-    "AD": "weur",
-    "SM": "weur",
-    "VA": "weur",
-    "LI": "weur",
-    "MT": "weur",
+    GB: "weur",
+    FR: "weur",
+    DE: "weur",
+    ES: "weur",
+    IT: "weur",
+    NL: "weur",
+    BE: "weur",
+    CH: "weur",
+    AT: "weur",
+    PT: "weur",
+    IE: "weur",
+    LU: "weur",
+    MC: "weur",
+    AD: "weur",
+    SM: "weur",
+    VA: "weur",
+    LI: "weur",
+    MT: "weur",
     // Nordic countries (route to WEUR)
-    "SE": "weur",
-    "NO": "weur",
-    "DK": "weur",
-    "FI": "weur",
-    "IS": "weur",
+    SE: "weur",
+    NO: "weur",
+    DK: "weur",
+    FI: "weur",
+    IS: "weur",
     // Eastern Europe
-    "PL": "eeur",
-    "RU": "eeur",
-    "UA": "eeur",
-    "RO": "eeur",
-    "CZ": "eeur",
-    "HU": "eeur",
-    "GR": "eeur",
-    "BG": "eeur",
-    "SK": "eeur",
-    "HR": "eeur",
-    "RS": "eeur",
-    "SI": "eeur",
-    "BA": "eeur",
-    "AL": "eeur",
-    "MK": "eeur",
-    "ME": "eeur",
-    "XK": "eeur",
-    "BY": "eeur",
-    "MD": "eeur",
-    "LT": "eeur",
-    "LV": "eeur",
-    "EE": "eeur",
-    "CY": "eeur",
+    PL: "eeur",
+    RU: "eeur",
+    UA: "eeur",
+    RO: "eeur",
+    CZ: "eeur",
+    HU: "eeur",
+    GR: "eeur",
+    BG: "eeur",
+    SK: "eeur",
+    HR: "eeur",
+    RS: "eeur",
+    SI: "eeur",
+    BA: "eeur",
+    AL: "eeur",
+    MK: "eeur",
+    ME: "eeur",
+    XK: "eeur",
+    BY: "eeur",
+    MD: "eeur",
+    LT: "eeur",
+    LV: "eeur",
+    EE: "eeur",
+    CY: "eeur",
     // Asia-Pacific
-    "JP": "apac",
-    "CN": "apac",
-    "KR": "apac",
-    "IN": "apac",
-    "SG": "apac",
-    "TH": "apac",
-    "ID": "apac",
-    "MY": "apac",
-    "VN": "apac",
-    "PH": "apac",
-    "TW": "apac",
-    "HK": "apac",
-    "MO": "apac",
-    "KH": "apac",
-    "LA": "apac",
-    "MM": "apac",
-    "BD": "apac",
-    "LK": "apac",
-    "NP": "apac",
-    "BT": "apac",
-    "MV": "apac",
-    "PK": "apac",
-    "AF": "apac",
-    "MN": "apac",
-    "KP": "apac",
-    "BN": "apac",
-    "TL": "apac",
-    "PG": "apac",
-    "FJ": "apac",
-    "SB": "apac",
-    "VU": "apac",
-    "NC": "apac",
-    "PF": "apac",
-    "WS": "apac",
-    "TO": "apac",
-    "KI": "apac",
-    "PW": "apac",
-    "MH": "apac",
-    "FM": "apac",
-    "NR": "apac",
-    "TV": "apac",
-    "CK": "apac",
-    "NU": "apac",
-    "TK": "apac",
-    "GU": "apac",
-    "MP": "apac",
-    "AS": "apac",
+    JP: "apac",
+    CN: "apac",
+    KR: "apac",
+    IN: "apac",
+    SG: "apac",
+    TH: "apac",
+    ID: "apac",
+    MY: "apac",
+    VN: "apac",
+    PH: "apac",
+    TW: "apac",
+    HK: "apac",
+    MO: "apac",
+    KH: "apac",
+    LA: "apac",
+    MM: "apac",
+    BD: "apac",
+    LK: "apac",
+    NP: "apac",
+    BT: "apac",
+    MV: "apac",
+    PK: "apac",
+    AF: "apac",
+    MN: "apac",
+    KP: "apac",
+    BN: "apac",
+    TL: "apac",
+    PG: "apac",
+    FJ: "apac",
+    SB: "apac",
+    VU: "apac",
+    NC: "apac",
+    PF: "apac",
+    WS: "apac",
+    TO: "apac",
+    KI: "apac",
+    PW: "apac",
+    MH: "apac",
+    FM: "apac",
+    NR: "apac",
+    TV: "apac",
+    CK: "apac",
+    NU: "apac",
+    TK: "apac",
+    GU: "apac",
+    MP: "apac",
+    AS: "apac",
     // Oceania
-    "AU": "oc",
-    "NZ": "oc",
+    AU: "oc",
+    NZ: "oc",
     // Middle East
-    "AE": "me",
-    "SA": "me",
-    "IL": "me",
-    "TR": "me",
-    "EG": "me",
-    "IQ": "me",
-    "IR": "me",
-    "SY": "me",
-    "JO": "me",
-    "LB": "me",
-    "KW": "me",
-    "QA": "me",
-    "BH": "me",
-    "OM": "me",
-    "YE": "me",
-    "PS": "me",
-    "GE": "me",
-    "AM": "me",
-    "AZ": "me",
+    AE: "me",
+    SA: "me",
+    IL: "me",
+    TR: "me",
+    EG: "me",
+    IQ: "me",
+    IR: "me",
+    SY: "me",
+    JO: "me",
+    LB: "me",
+    KW: "me",
+    QA: "me",
+    BH: "me",
+    OM: "me",
+    YE: "me",
+    PS: "me",
+    GE: "me",
+    AM: "me",
+    AZ: "me",
     // Africa
-    "ZA": "afr",
-    "NG": "afr",
-    "KE": "afr",
-    "MA": "afr",
-    "TN": "afr",
-    "DZ": "afr",
-    "LY": "afr",
-    "ET": "afr",
-    "GH": "afr",
-    "TZ": "afr",
-    "UG": "afr",
-    "SD": "afr",
-    "AO": "afr",
-    "MZ": "afr",
-    "MG": "afr",
-    "CM": "afr",
-    "CI": "afr",
-    "NE": "afr",
-    "BF": "afr",
-    "ML": "afr",
-    "MW": "afr",
-    "ZM": "afr",
-    "SN": "afr",
-    "SO": "afr",
-    "TD": "afr",
-    "ZW": "afr",
-    "GN": "afr",
-    "RW": "afr",
-    "BJ": "afr",
-    "BI": "afr",
-    "TG": "afr",
-    "SL": "afr",
-    "LR": "afr",
-    "MR": "afr",
-    "CF": "afr",
-    "ER": "afr",
-    "GM": "afr",
-    "BW": "afr",
-    "NA": "afr",
-    "GA": "afr",
-    "LS": "afr",
-    "GW": "afr",
-    "GQ": "afr",
-    "MU": "afr",
-    "SZ": "afr",
-    "DJ": "afr",
-    "KM": "afr",
-    "CV": "afr",
-    "SC": "afr",
-    "ST": "afr",
-    "SS": "afr",
-    "EH": "afr",
-    "CG": "afr",
-    "CD": "afr",
+    ZA: "afr",
+    NG: "afr",
+    KE: "afr",
+    MA: "afr",
+    TN: "afr",
+    DZ: "afr",
+    LY: "afr",
+    ET: "afr",
+    GH: "afr",
+    TZ: "afr",
+    UG: "afr",
+    SD: "afr",
+    AO: "afr",
+    MZ: "afr",
+    MG: "afr",
+    CM: "afr",
+    CI: "afr",
+    NE: "afr",
+    BF: "afr",
+    ML: "afr",
+    MW: "afr",
+    ZM: "afr",
+    SN: "afr",
+    SO: "afr",
+    TD: "afr",
+    ZW: "afr",
+    GN: "afr",
+    RW: "afr",
+    BJ: "afr",
+    BI: "afr",
+    TG: "afr",
+    SL: "afr",
+    LR: "afr",
+    MR: "afr",
+    CF: "afr",
+    ER: "afr",
+    GM: "afr",
+    BW: "afr",
+    NA: "afr",
+    GA: "afr",
+    LS: "afr",
+    GW: "afr",
+    GQ: "afr",
+    MU: "afr",
+    SZ: "afr",
+    DJ: "afr",
+    KM: "afr",
+    CV: "afr",
+    SC: "afr",
+    ST: "afr",
+    SS: "afr",
+    EH: "afr",
+    CG: "afr",
+    CD: "afr",
     // Central Asia (route to APAC)
-    "KZ": "apac",
-    "UZ": "apac",
-    "TM": "apac",
-    "TJ": "apac",
-    "KG": "apac"
+    KZ: "apac",
+    UZ: "apac",
+    TM: "apac",
+    TJ: "apac",
+    KG: "apac"
   };
   const usStateToHint = {
     // Western states -> WNAM
-    "California": "wnam",
-    "Oregon": "wnam",
-    "Washington": "wnam",
-    "Nevada": "wnam",
-    "Arizona": "wnam",
-    "Utah": "wnam",
-    "Idaho": "wnam",
-    "Montana": "wnam",
-    "Wyoming": "wnam",
-    "Colorado": "wnam",
+    California: "wnam",
+    Oregon: "wnam",
+    Washington: "wnam",
+    Nevada: "wnam",
+    Arizona: "wnam",
+    Utah: "wnam",
+    Idaho: "wnam",
+    Montana: "wnam",
+    Wyoming: "wnam",
+    Colorado: "wnam",
     "New Mexico": "wnam",
-    "Alaska": "wnam",
-    "Hawaii": "wnam",
+    Alaska: "wnam",
+    Hawaii: "wnam",
     // Eastern states -> ENAM
     "New York": "enam",
-    "Florida": "enam",
-    "Texas": "enam",
-    "Illinois": "enam",
-    "Georgia": "enam",
-    "Pennsylvania": "enam",
-    "Ohio": "enam",
-    "Michigan": "enam",
+    Florida: "enam",
+    Texas: "enam",
+    Illinois: "enam",
+    Georgia: "enam",
+    Pennsylvania: "enam",
+    Ohio: "enam",
+    Michigan: "enam",
     "North Carolina": "enam",
-    "Virginia": "enam",
-    "Massachusetts": "enam",
+    Virginia: "enam",
+    Massachusetts: "enam",
     "New Jersey": "enam",
-    "Maryland": "enam",
-    "Connecticut": "enam",
-    "Maine": "enam",
+    Maryland: "enam",
+    Connecticut: "enam",
+    Maine: "enam",
     "New Hampshire": "enam",
-    "Vermont": "enam",
+    Vermont: "enam",
     "Rhode Island": "enam",
     "South Carolina": "enam",
-    "Tennessee": "enam",
-    "Alabama": "enam",
-    "Mississippi": "enam",
-    "Louisiana": "enam",
-    "Arkansas": "enam",
-    "Missouri": "enam",
-    "Iowa": "enam",
-    "Minnesota": "enam",
-    "Wisconsin": "enam",
-    "Indiana": "enam",
-    "Kentucky": "enam",
+    Tennessee: "enam",
+    Alabama: "enam",
+    Mississippi: "enam",
+    Louisiana: "enam",
+    Arkansas: "enam",
+    Missouri: "enam",
+    Iowa: "enam",
+    Minnesota: "enam",
+    Wisconsin: "enam",
+    Indiana: "enam",
+    Kentucky: "enam",
     "West Virginia": "enam",
-    "Delaware": "enam",
-    "Oklahoma": "enam",
-    "Kansas": "enam",
-    "Nebraska": "enam",
+    Delaware: "enam",
+    Oklahoma: "enam",
+    Kansas: "enam",
+    Nebraska: "enam",
     "South Dakota": "enam",
     "North Dakota": "enam",
     // DC
     "District of Columbia": "enam"
   };
   const continentToHint = {
-    "NA": "enam",
-    "SA": "sam",
-    "EU": "weur",
-    "AS": "apac",
-    "AF": "afr",
-    "OC": "oc"
+    NA: "enam",
+    SA: "sam",
+    EU: "weur",
+    AS: "apac",
+    AF: "afr",
+    OC: "oc"
   };
   let bestHint;
   if (country === "US" && region && region !== "unknown") {
@@ -5150,16 +5236,20 @@ __name(getDatabaseSizeBytes, "getDatabaseSizeBytes");
 async function pruneOldEvents(session, targetSizeBytes) {
   let totalEventsDeleted = 0;
   let currentSize = await getDatabaseSizeBytes(session);
-  console.log(`Starting database pruning. Current size: ${(currentSize / (1024 * 1024 * 1024)).toFixed(2)} GB, Target: ${(targetSizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`);
+  console.log(
+    `Starting database pruning. Current size: ${(currentSize / (1024 * 1024 * 1024)).toFixed(2)} GB, Target: ${(targetSizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+  );
   const protectedKindsArray = Array.from(pruneProtectedKinds2);
   const protectedKindsClause = protectedKindsArray.length > 0 ? `AND kind NOT IN (${protectedKindsArray.join(",")})` : "";
   while (currentSize > targetSizeBytes) {
-    const oldestEvents = await session.prepare(`
+    const oldestEvents = await session.prepare(
+      `
       SELECT id FROM events
       WHERE 1=1 ${protectedKindsClause}
       ORDER BY created_at ASC
       LIMIT ?
-    `).bind(DB_PRUNE_BATCH_SIZE2).all();
+    `
+    ).bind(DB_PRUNE_BATCH_SIZE2).all();
     if (!oldestEvents.results || oldestEvents.results.length === 0) {
       console.log("No more events eligible for pruning");
       break;
@@ -5167,16 +5257,22 @@ async function pruneOldEvents(session, targetSizeBytes) {
     const eventIds = oldestEvents.results.map((row) => row.id);
     const placeholders = eventIds.map(() => "?").join(",");
     const pruneResults = await session.batch([
-      session.prepare(`DELETE FROM event_tags_cache_multi WHERE event_id IN (${placeholders})`).bind(...eventIds),
+      session.prepare(
+        `DELETE FROM event_tags_cache_multi WHERE event_id IN (${placeholders})`
+      ).bind(...eventIds),
       session.prepare(`DELETE FROM events WHERE id IN (${placeholders})`).bind(...eventIds)
     ]);
     const deletedCount = pruneResults[1]?.meta?.changes || eventIds.length;
     totalEventsDeleted += deletedCount;
     console.log(`Pruned ${deletedCount} events (total: ${totalEventsDeleted})`);
     currentSize = await getDatabaseSizeBytes(session);
-    console.log(`Current database size: ${(currentSize / (1024 * 1024 * 1024)).toFixed(2)} GB`);
+    console.log(
+      `Current database size: ${(currentSize / (1024 * 1024 * 1024)).toFixed(2)} GB`
+    );
     if (totalEventsDeleted >= 1e5) {
-      console.log("Reached maximum pruning limit for this run (100,000 events)");
+      console.log(
+        "Reached maximum pruning limit for this run (100,000 events)"
+      );
       break;
     }
   }
@@ -5208,7 +5304,9 @@ var relay_worker_default = {
           return handleRelayInfoRequest(request);
         } else {
           ctx.waitUntil(
-            initializeDatabase(env.RELAY_DATABASE).catch((e) => console.error("DB init error:", e))
+            initializeDatabase(env.RELAY_DATABASE).catch(
+              (e) => console.error("DB init error:", e)
+            )
           );
           return serveLandingPage();
         }
@@ -5232,12 +5330,18 @@ var relay_worker_default = {
       if (DB_PRUNING_ENABLED2) {
         const currentSizeBytes = await getDatabaseSizeBytes(session);
         const currentSizeGB = currentSizeBytes / (1024 * 1024 * 1024);
-        console.log(`Current database size: ${currentSizeGB.toFixed(2)} GB (threshold: ${DB_SIZE_THRESHOLD_GB2} GB)`);
+        console.log(
+          `Current database size: ${currentSizeGB.toFixed(2)} GB (threshold: ${DB_SIZE_THRESHOLD_GB2} GB)`
+        );
         if (currentSizeGB >= DB_SIZE_THRESHOLD_GB2) {
-          console.log(`Database size (${currentSizeGB.toFixed(2)} GB) exceeds threshold (${DB_SIZE_THRESHOLD_GB2} GB). Starting pruning...`);
+          console.log(
+            `Database size (${currentSizeGB.toFixed(2)} GB) exceeds threshold (${DB_SIZE_THRESHOLD_GB2} GB). Starting pruning...`
+          );
           const targetSizeBytes = DB_PRUNE_TARGET_GB2 * 1024 * 1024 * 1024;
           const pruneResult = await pruneOldEvents(session, targetSizeBytes);
-          console.log(`Pruning completed. Deleted ${pruneResult.eventsDeleted} events. Final size: ${(pruneResult.finalSizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`);
+          console.log(
+            `Pruning completed. Deleted ${pruneResult.eventsDeleted} events. Final size: ${(pruneResult.finalSizeBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
+          );
         } else {
           console.log("Database size is within limits. No pruning needed.");
         }
