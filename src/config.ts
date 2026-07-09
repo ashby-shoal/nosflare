@@ -116,6 +116,7 @@ export const blockedPubkeys = new Set([
 // Allowed pubkeys
 // Add pubkeys in hex format to allow write access
 export const allowedPubkeys = new Set<string>([
+  "c1ca677ab2863f4135d0a9e19062cf1997483f7592895d716249dd8d6b3b416c"
   "b6f2c7a925558bb34c60dd6616647987b89f618e82a16de65e0a4b463f28b974",
   "d130ad0f91722f3e8c66522c54b7ee1e73dcb537e6944b7bf2cbb933d4bf7b2a",
   "40f8d4e642843d5ab39c2147531efe00f496bb2941de7a2a77c0cf6d7db202bd"
