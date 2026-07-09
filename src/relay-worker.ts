@@ -2095,7 +2095,7 @@ function serveLandingPage(): Response {
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Nostr Relay Event Viewer</title>
+        <title>Nostr Event Viewer</title>
 
         <style>
           * {
